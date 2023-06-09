@@ -1422,7 +1422,6 @@ recursive subroutine ESMF_TimeGet(time, YY, MM, DD, D, Dl, H, M, S, MS, &
         print *,' Time -----------------------------------'
         print *,' ',TRIM(timestr)
         print *,' end Time -------------------------------'
-        print *
       ELSE
         call print_a_time (time)
       ENDIF
