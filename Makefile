@@ -4,6 +4,67 @@ MODEL_FORMULATION =
 dummy:
 	( $(MAKE) error )
 
+# manually-constructed list of dependencies for mpas_atm_time_integration
+rose_depends_o = ./src/external/esmf_time_f90/ESMF.o \
+	./src/framework/mpas_framework.o \
+	./src/operators/mpas_vector_reconstruction.o \
+	./src/core_atmosphere/mpas_atm_dimensions.o \
+	./src/core_atmosphere/dynamics/mpas_atm_time_integration.o
+
+rose_depends: $(rose_depends_o)
+rose-compiler:
+	( $(MAKE) rose_depends \
+	"FC_PARALLEL = rose-compiler" \
+	"CC_PARALLEL = mpicc" \
+	"CXX_PARALLEL = mpicxx" \
+	"FC_SERIAL = rose-compiler" \
+	"CC_SERIAL = gcc" \
+	"CXX_SERIAL = g++" \
+	"FFLAGS_PROMOTION = -fdefault-real-8 -fdefault-double-8" \
+	"FFLAGS_OPT = -rose:skip_unparse -rose:skipfinalCompileStep -I. -I/glade/u/apps/ch/opt/mpt/2.22/include/" \
+	"CFLAGS_OPT = -O3" \
+	"CXXFLAGS_OPT = -O3" \
+	"LDFLAGS_OPT = -O3" \
+	"FFLAGS_DEBUG = -g -ffree-line-length-none -fconvert=big-endian -ffree-form -fcheck=all -fbacktrace -ffpe-trap=invalid,zero,overflow" \
+	"CFLAGS_DEBUG = -g" \
+	"CXXFLAGS_DEBUG = -g" \
+	"LDFLAGS_DEBUG = -g" \
+	"FFLAGS_OMP = -fopenmp" \
+	"CFLAGS_OMP = -fopenmp" \
+	"CORE = $(CORE)" \
+	"DEBUG = $(DEBUG)" \
+	"USE_PAPI = $(USE_PAPI)" \
+	"OPENMP = $(OPENMP)" \
+	"CPPFLAGS = $(MODEL_FORMULATION) -D_MPI -DNOMPIMOD -DROSE_COMP" )
+# -DROSE_COMP added to exclude external libraries we aren't interested in analyzing
+# -DNOMPIMOD added because rose-compiler couldn't open the mod file and MPAS has a switch based on this flag for including mpif.h instead 
+# -I. included for framework directory b/c rose-compiler couldn't find the *.inc files in the same directory
+# -I/glade/u/apps/ch/opt/mpt/2.22/include/ included b/c rose-compiler couldn't find mpi
+$(rose_depends_o):
+	cd $(dir $@); $(MAKE) $(notdir $@) -f Makefile.rose \
+				 FC="$(FC)" \
+                 CC="$(CC)" \
+                 CXX="$(CXX)" \
+                 SFC="$(SFC)" \
+                 SCC="$(SCC)" \
+                 LINKER="$(LINKER)" \
+                 CFLAGS="$(CFLAGS)" \
+                 CXXFLAGS="$(CXXFLAGS)" \
+                 FFLAGS="$(FFLAGS)" \
+                 LDFLAGS="$(LDFLAGS)" \
+                 RM="$(RM)" \
+                 CPP="$(CPP)" \
+                 CPPFLAGS="$(CPPFLAGS)" \
+                 LIBS="$(LIBS)" \
+                 CPPINCLUDES="$(CPPINCLUDES)" \
+                 FCINCLUDES="$(FCINCLUDES)" \
+                 CORE="$(CORE)"\
+                 AUTOCLEAN="$(AUTOCLEAN)" \
+                 GEN_F90="$(GEN_F90)" \
+                 NAMELIST_SUFFIX="$(NAMELIST_SUFFIX)" \
+                 EXE_NAME="$(EXE_NAME)"
+	@echo "Successfully generated .rmod files"
+
 xlf:
 	( $(MAKE) all \
 	"FC_PARALLEL = mpifort" \
