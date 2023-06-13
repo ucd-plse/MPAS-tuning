@@ -1509,6 +1509,7 @@ module mpas_io
 
                ! Copy all characters up to the first C null char or the end of
                ! the string, whichever comes first
+#ifndef ROSE_COMP
                charArray1d(i)(:) = ' '
                do j = 1, len(tempchar(1))
                   if ( tempchar(1)(j:j) /= CHAR(0)) then
@@ -1517,6 +1518,7 @@ module mpas_io
                      exit
                   end if
                end do
+#endif
             end do
          else
             ! Can only read one string at a time, since the sizes differ so much (i.e. StrLen != StrKIND)
@@ -1529,6 +1531,7 @@ module mpas_io
 
                ! Copy all characters up to the first C null char or the end of
                ! the string, whichever comes first
+#ifndef ROSE_COMP
                charArray1d(i)(:) = ' '
                do j = 1, len(tempchar(1))
                   if ( tempchar(1)(j:j) /= CHAR(0)) then
@@ -1537,6 +1540,7 @@ module mpas_io
                      exit
                   end if
                end do
+#endif
             end do
          end if
       else if (present(realArray1d)) then
@@ -2000,7 +2004,6 @@ module mpas_io
          if (present(ierr)) ierr = MPAS_IO_ERR_PIO
          return
       end if
-
    end subroutine MPAS_io_get_var_generic
 
 
