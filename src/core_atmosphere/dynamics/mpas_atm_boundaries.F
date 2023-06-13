@@ -12,8 +12,11 @@ module mpas_atm_boundaries
                                    MPAS_streamManager_type
     use mpas_pool_routines, only : mpas_pool_get_array, mpas_pool_get_dimension, mpas_pool_get_subpool, mpas_pool_shift_time_levels
     use mpas_kind_types, only : RKIND, StrKIND
+#ifndef ROSE_COMP
     use mpas_timekeeping, only : mpas_get_clock_time, mpas_get_timeInterval, mpas_set_time, operator(-)
-
+#else
+    use mpas_timekeeping
+#endif
     ! Important note: At present, the code in mpas_atm_setup_bdy_masks for
     ! deriving the nearestRelaxationCell field assumes that nSpecZone == 2
     integer, parameter :: nSpecZone = 2
