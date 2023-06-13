@@ -738,7 +738,11 @@ module mpas_log
       !-----------------------------------------------------------------
       ! return variable
       !-----------------------------------------------------------------
+#ifndef ROSE_COMP
       character (len=:), allocatable :: escape_str
+#else
+      character (len=100):: escape_str
+#endif
 
       !-----------------------------------------------------------------
       ! local variables
@@ -757,7 +761,9 @@ module mpas_log
          end if
       end do
 
+#ifndef ROSE_COMP
       allocate(character(len=n_out) :: escape_str)
+#endif
 
       !
       ! Change every '$' to '$$'
