@@ -12,10 +12,12 @@ module mpas_io
    use mpas_dmpar
    use mpas_log
 
+#ifndef ROSE_COMP
    use pio
    use piolib_mod
    use pionfatt_mod
    use pio_types
+#endif
 
 #ifdef SINGLE_PRECISION
    integer, parameter :: PIO_REALKIND = PIO_REAL

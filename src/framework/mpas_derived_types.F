@@ -27,8 +27,10 @@ module mpas_derived_types
 
    use mpas_kind_types
 
+#ifndef ROSE_COMP
    use pio
    use pio_types
+#endif
 
    use ESMF
    use ESMF_BaseMod
