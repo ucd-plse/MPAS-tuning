@@ -48,12 +48,14 @@
      character(len=strKIND) :: forcingInitializationType
 
      ! optional functions to calculate variable intervals
+#ifndef ROSE_COMP
      procedure (variable_interval), pointer, nopass :: variable_interval_forward_ptr => null ()
      procedure (variable_interval), pointer, nopass :: variable_interval_backward_ptr => null ()
 
      ! function pointer to new functions to test same as stream ones
      procedure (variable_interval), pointer, nopass :: variable_interval_forward_test_ptr => null ()
      procedure (variable_interval), pointer, nopass :: variable_interval_backward_test_ptr => null ()
+#endif
 
      ! linked list of individual forcing fields
      type (mpas_forcing_field_type), pointer :: field => null()

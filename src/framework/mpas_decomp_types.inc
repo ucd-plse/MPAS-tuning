@@ -20,6 +20,8 @@
    type mpas_decomp_list
       integer :: nameLen
       character (len=StrKIND) :: decompName
+#ifndef ROSE_COMP
       procedure (mpas_decomp_function), pointer, nopass :: decompFunc => null()
+#endif
       type (mpas_decomp_list), pointer :: next => null()
    end type mpas_decomp_list
