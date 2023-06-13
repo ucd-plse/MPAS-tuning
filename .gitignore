@@ -59,4 +59,9 @@ stream_list.*
 *.i
 *.i90
 
+# Intermediate files that may be produced by Rose compiler
+*.rmod
+*postprocessed*
+rose_*
+
 src/core_*/inc
