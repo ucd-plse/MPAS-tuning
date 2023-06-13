@@ -5995,7 +5995,9 @@ module mpas_pool_routines
    subroutine pool_hash(hash, key)!{{{
 
       use iso_c_binding, only : c_int, c_char
+#ifndef ROSE_COMP
       use mpas_c_interfacing, only : mpas_f_to_c_string
+#endif
 
       implicit none
 
