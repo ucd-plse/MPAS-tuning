@@ -21,7 +21,7 @@ rose-compiler:
 	"CC_SERIAL = gcc" \
 	"CXX_SERIAL = g++" \
 	"FFLAGS_PROMOTION = -fdefault-real-8 -fdefault-double-8" \
-	"FFLAGS_OPT = -rose:skip_unparse -rose:skipfinalCompileStep -I. -I/glade/u/apps/ch/opt/mpt/2.22/include/" \
+	"FFLAGS_OPT = -rose:skip_unparse -rose:skipfinalCompileStep -rose:skip_syntax_check -I. -I/glade/u/apps/ch/opt/mpt/2.22/include/ -I/glade/work/jdvanover/ROSE/install/share/rose" \
 	"CFLAGS_OPT = -O3" \
 	"CXXFLAGS_OPT = -O3" \
 	"LDFLAGS_OPT = -O3" \
