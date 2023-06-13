@@ -292,7 +292,9 @@ module mpas_io
       if (mode == MPAS_IO_WRITE) then
 !call mpas_log_write('MGD PIO_createfile')
          if (ioContext % dminfo % my_proc_id == 0) then
+#ifndef ROSE_COMP
             inquire(file=trim(filename), exist=exists)
+#endif
          end if
          call mpas_dmpar_bcast_logical(ioContext % dminfo, exists)
 
@@ -315,7 +317,9 @@ module mpas_io
 #endif
          end if
       else
+#ifndef ROSE_COMP
          inquire(file=trim(filename), exist=exists)
+#endif
 
          if (.not. exists) then
             if (present(ierr)) ierr = MPAS_IO_ERR_NOEXIST_READ

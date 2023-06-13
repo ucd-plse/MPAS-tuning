@@ -47,7 +47,9 @@ module mpas_io_units
 
         do i = 1, maxUnits
             if (.not. unitsInUse(i)) then
+#ifndef ROSE_COMP
                 inquire(i, opened=opened)
+#endif
                 if (opened) then
                     unitsInUse(i) = .true.
                 else

@@ -220,7 +220,9 @@ module mpas_log
          mpas_log_info % outputLog % unitNum = unitNumbers(1)
 
          ! Retrieve metadata for this unit to see if it is open and, if so, what it's name is
+#ifndef ROSE_COMP
          inquire(mpas_log_info % outputLog % unitNum, name=fileName, opened=isOpen, iostat=err_tmp)
+#endif
          if (err_tmp > 0) then
             call mpas_dmpar_global_abort('ERROR: Log initialization failed because externally supplied log unit could not be inquired!')
          endif
@@ -242,7 +244,9 @@ module mpas_log
          mpas_log_info % errorLog % unitNum = unitNumbers(2)
 
          ! Retrieve metadata for this unit to see if it is open and, if so, what it's name is
+#ifndef ROSE_COMP
          inquire(mpas_log_info % errorLog % unitNum, name=fileName, opened=isOpen, iostat=err_tmp)
+#endif
          if (err_tmp > 0) then
             call mpas_dmpar_global_abort('ERROR: Log initialization failed because externally supplied err unit could not be inquired!')
          endif
@@ -382,9 +386,10 @@ module mpas_log
       if (alreadyOpen) then
 
          ! Retrieve metadata for this unit to get the file name, and to check it is an approriate unit for a log
+#ifndef ROSE_COMP
          inquire(unitNumber, name=fileName, opened=isOpen, write=writeSetting, &
             sequential=sequentialSetting, formatted=formattedSetting, iostat=err_tmp)
-
+#endif
          if (err_tmp > 0) then
             call mpas_dmpar_global_abort('ERROR: Log initialization failed because supplied unit could not be inquired!')
          endif
