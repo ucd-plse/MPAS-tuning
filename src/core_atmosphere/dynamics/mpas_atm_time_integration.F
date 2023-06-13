@@ -6674,7 +6674,9 @@ module atm_time_integration
 
    subroutine summarize_timestep(domain)
 
+#ifndef ROSE_COMP
        use ieee_arithmetic, only : ieee_is_nan
+#endif
 
        implicit none
 
@@ -6925,7 +6927,11 @@ module atm_time_integration
             !
             do iCell = 1, nCellsSolve
             do k = 1, nVertLevels
+#ifndef ROSE_COMP
                if (ieee_is_nan(w(k,iCell))) then
+#else
+               if (w(k,iCell) /= w(k,iCell) ) then
+#endif
                   call mpas_log_write('NaN detected in ''w'' field.', messageType=MPAS_LOG_CRIT)
                end if
             end do
@@ -6933,7 +6939,11 @@ module atm_time_integration
 
             do iEdge = 1, nEdgesSolve
             do k = 1, nVertLevels
+#ifndef ROSE_COMP
                if (ieee_is_nan(u(k,iEdge))) then
+#else
+               if (u(k,iEdge) /= u(k,iEdge) ) then
+#endif
                   call mpas_log_write('NaN detected in ''u'' field.', messageType=MPAS_LOG_CRIT)
                end if
             end do
