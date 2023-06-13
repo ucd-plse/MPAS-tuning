@@ -1,6 +1,7 @@
    integer, parameter :: MPAS_DECOMP_NOERR = 1000, &
                          MPAS_DECOMP_ERROR = 1001
 
+#ifndef ROSE_COMP
    abstract interface
       function mpas_decomp_function(block, manager, globalDimSize, numBlocks, ownedIndices) result(iErr)
          import block_type
@@ -14,6 +15,7 @@
          integer :: iErr
       end function
    end interface
+#endif
 
    type mpas_decomp_list
       integer :: nameLen

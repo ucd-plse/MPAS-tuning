@@ -1,4 +1,5 @@
   ! abstract interface for variable interface function
+#ifndef ROSE_COMP
   abstract interface
      function variable_interval(currentTime) result(variableInterval)
        import MPAS_Time_type
@@ -7,6 +8,7 @@
        type(MPAS_TimeInterval_type) :: variableInterval
      end function variable_interval
   end interface
+#endif
 
   ! individual forcing field associated with a forcing stream
   type :: mpas_forcing_field_type

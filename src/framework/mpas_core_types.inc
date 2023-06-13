@@ -1,3 +1,4 @@
+#ifndef ROSE_COMP
    abstract interface
       function mpas_setup_namelist_function(configs, namelistFilename, dminfo) result(iErr)
          use mpas_kind_types
@@ -142,6 +143,7 @@
          integer :: iErr
       end function
    end interface
+#endif
 
    type core_type
       type (domain_type), pointer :: domainlist => null()
@@ -155,6 +157,7 @@
       character (len=StrKIND) :: Conventions !< Conventions attribute, read in from input file.
       character (len=StrKIND) :: source !< source attribute, read in from input file.
 
+#ifndef ROSE_COMP
       ! Core init, run, and finalize function pointers
       procedure (mpas_core_init_function), pointer, nopass :: core_init => null()
       procedure (mpas_core_run_function), pointer, nopass :: core_run => null()
@@ -172,6 +175,7 @@
       procedure (mpas_setup_immutable_streams_function), pointer, nopass :: setup_immutable_streams => null()
       procedure (mpas_setup_derived_dimensions_function), pointer, nopass :: setup_derived_dimensions => null()
       procedure (mpas_setup_decomposed_dimensions_function), pointer, nopass :: setup_decomposed_dimensions => null()
+#endif
 
       ! core_type is a linked list
       type (core_type), pointer :: next => null()
