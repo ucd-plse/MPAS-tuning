@@ -20,7 +20,7 @@ module purge
 echo "## LOADING MPAS ROSE DEPENDENCIES"
 
 module load ncarenv/1.3
-module load intel gnu/7.4.0
+module load gnu/7.4.0
 module load ncarcompilers/0.5.0
 module load netcdf/4.7.1
     # module load netcdf/4.6.3

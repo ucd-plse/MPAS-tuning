@@ -21,7 +21,7 @@ echo "## LOADING MPAS GNU DEPENDENCIES"
 
 # below is the closest match I could find on the current cheyenne system
 module load ncarenv/1.3
-module load intel gnu/8.3.0
+module load gnu/8.3.0
 module load ncarcompilers/0.5.0
 module load netcdf/4.7.1
     # module load netcdf/4.6.3
