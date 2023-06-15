@@ -19,8 +19,7 @@ module atm_time_integration
    use mpas_timekeeping, only: MPAS_Time_type, MPAS_TimeInterval_type, &
                                mpas_set_time, mpas_set_timeInterval, mpas_get_time, operator(+), add_t_ti
 #else
-   use mpas_timekeeping, only: MPAS_Time_type, MPAS_TimeInterval_type, &
-                               mpas_set_time, mpas_set_timeInterval, mpas_get_time, add_t_ti
+   use mpas_timekeeping
 #endif
    use mpas_timer
 
