@@ -15,7 +15,7 @@ module mpas_atm_boundaries
 #ifndef ROSE_COMP
     use mpas_timekeeping, only : mpas_get_clock_time, mpas_get_timeInterval, mpas_set_time, operator(-)
 #else
-    use mpas_timekeeping
+    use mpas_timekeeping, prose_dummy=>abs
 #endif
     ! Important note: At present, the code in mpas_atm_setup_bdy_masks for
     ! deriving the nearestRelaxationCell field assumes that nSpecZone == 2
