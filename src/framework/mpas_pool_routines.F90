@@ -23,6 +23,10 @@ module mpas_pool_routines
    use mpas_field_routines
    use mpas_threading
    use mpas_log
+
+#ifdef ROSE_COMP
+   use mpas_c_interfacing, only : mpas_f_to_c_string
+#endif
    
    interface mpas_pool_add_field
       module procedure mpas_pool_add_field_0d_real

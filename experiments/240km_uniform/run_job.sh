@@ -11,7 +11,7 @@
 export TMPDIR=/glade/scratch/$USER/temp
 mkdir -p $TMPDIR
 
-timeout 300 mpirun ./atmosphere_model
+timeout 300 mpirun ../../atmosphere_model
 status=$?
 if [ $status -eq 124 ]; then
     touch ./execution_timeout
