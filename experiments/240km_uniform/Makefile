@@ -1,5 +1,5 @@
 clean:
-	rm -f history*nc diag*nc history*nc restart*nc restart_timestamp stdout.txt stderr.txt
+	rm -f history*nc diag*nc history*nc log.*.err restart*nc restart_timestamp stdout.txt stderr.txt
 
 rose-clean: clean
 	# remove rose generated files

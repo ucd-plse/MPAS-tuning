@@ -11,6 +11,8 @@
 export TMPDIR=/glade/scratch/$USER/temp
 mkdir -p $TMPDIR
 
+make clean
+
 timeout 300 mpirun ../../atmosphere_model
 status=$?
 if [ $status -eq 124 ]; then
