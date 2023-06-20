@@ -87,6 +87,15 @@ module atm_time_integration
 
    contains
 
+   function flux4(q_im2, q_im1, q_i, q_ip1, ua)
+      real (kind=RKIND) :: q_im2, q_im1, q_i, q_ip1, ua, coef3, flux4
+      flux4 = ua*( 7.*(q_i + q_im1) - (q_ip1 + q_im2) )/12.0
+   end function flux4
+
+   function flux3(q_im2, q_im1, q_i, q_ip1, ua, coef3)
+      real (kind=RKIND) :: q_im2, q_im1, q_i, q_ip1, ua, coef3, flux3
+      flux3 = flux4(q_im2, q_im1, q_i, q_ip1, ua) + coef3*abs(ua)*((q_ip1 - q_im2)-3.*(q_i-q_im1))/12.0
+   end function flux3
 
    subroutine atm_timestep(domain, dt, nowTime, itimestep)
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
@@ -3318,21 +3327,11 @@ module atm_time_integration
       real (kind=RKIND), dimension(nVertLevels,10) :: scalar_weight2
       integer, dimension(10) :: ica
 
-      real (kind=RKIND) :: flux3, flux4
-      real (kind=RKIND) :: q_im2, q_im1, q_i, q_ip1, ua, coef3
-
       logical :: local_advance_density
 
       real (kind=RKIND) :: weight_time_old, weight_time_new
       real (kind=RKIND), dimension(num_scalars,nVertLevels) :: scalar_tend_column  ! local storage to accumulate tendency
       real (kind=RKIND) :: u_direction, u_positive, u_negative
-
-      flux4(q_im2, q_im1, q_i, q_ip1, ua) =                     &
-          ua*( 7.*(q_i + q_im1) - (q_ip1 + q_im2) )/12.0
-
-      flux3(q_im2, q_im1, q_i, q_ip1, ua, coef3) =              &
-                flux4(q_im2, q_im1, q_i, q_ip1, ua) +           &
-                coef3*abs(ua)*((q_ip1 - q_im2)-3.*(q_i-q_im1))/12.0
 
       local_advance_density = advance_density
 
@@ -3710,20 +3709,13 @@ module atm_time_integration
 
 
       real (kind=RKIND), dimension(nVertLevels) :: flux_upwind_arr
-      real (kind=RKIND) :: flux3, flux4, flux_upwind
-      real (kind=RKIND) :: q_im2, q_im1, q_i, q_ip1, ua, coef3, scmin,scmax
+      real (kind=RKIND) :: flux_upwind
+      real (kind=RKIND) :: scmin,scmax
       real (kind=RKIND) :: scale_factor
 
       logical :: local_advance_density
 
       real (kind=RKIND), parameter :: eps=1.e-20
-
-      flux4(q_im2, q_im1, q_i, q_ip1, ua) =                     &
-          ua*( 7.*(q_i + q_im1) - (q_ip1 + q_im2) )/12.0
-
-      flux3(q_im2, q_im1, q_i, q_ip1, ua, coef3) =              &
-                flux4(q_im2, q_im1, q_i, q_ip1, ua) +           &
-                coef3*abs(ua)*((q_ip1 - q_im2)-3.*(q_i-q_im1))/12.0
 
       if (present(advance_density)) then
          local_advance_density = advance_density
