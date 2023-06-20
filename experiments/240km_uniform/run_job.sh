@@ -22,4 +22,4 @@ else
 fi
 
 mv log.atmosphere.0000.out stdout.txt
-ln -s stdout.txt stderr.txt
+ln -sf stdout.txt stderr.txt
