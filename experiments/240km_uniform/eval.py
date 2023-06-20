@@ -47,13 +47,14 @@ data = []
 for file_name in sorted([x for x in glob("history.*.nc")]):
 
     time = datetime.datetime(*[int(x) for x in file_name[file_name.find(".") + 1: file_name.rfind(".")].replace("_", "-").replace(".", "-").split("-")])
-
-    #save baseline output files if this is config 0000
-    if log_path == log_path_for_baseline:
-        os.rename(file_name, os.path.join(log_path, file_name))
-
     this_data = xr.open_dataset(file_name).drop(non_float_vars_drop)
-    baseline_data = xr.open_dataset(os.path.join(log_path_for_baseline, file_name)).drop(non_float_vars_drop)
+
+    # save baseline output files if this is config 0000
+    if log_path.endswith("prose_logs/0000"):
+        os.rename(file_name, os.path.join(log_path, file_name))
+        baseline_data = this_data
+    else:
+        baseline_data = xr.open_dataset(os.path.join(log_path_for_baseline, file_name)).drop(non_float_vars_drop)
 
     this_data_dict = (this_data - baseline_data).map(np.linalg.norm).to_array().to_pandas().to_dict()
     this_data_dict["time"] = time
