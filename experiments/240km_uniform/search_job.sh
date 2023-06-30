@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -N MPAS_master_job
 #PBS -A UCDV0023
-#PBS -l walltime=12:00:00
+#PBS -l walltime=1:00:00
 #PBS -q regular
 #PBS -j oe
 #PBS -k eod

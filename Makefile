@@ -4,12 +4,15 @@ MODEL_FORMULATION =
 dummy:
 	( $(MAKE) error )
 
-# manually-constructed list of dependencies for mpas_atm_time_integration
+# manually-constructed list of downstream object files wrt mpas_atm_time_integration
 rose_depends_o = ./src/external/esmf_time_f90/ESMF.o \
 	./src/framework/mpas_framework.o \
 	./src/operators/mpas_vector_reconstruction.o \
 	./src/core_atmosphere/mpas_atm_dimensions.o \
 	./src/core_atmosphere/dynamics/mpas_atm_time_integration.o
+
+# manually-constructed list of upstream object files wrt mpas_atm_time_integration
+rose_depends_o += ./src/core_atmosphere/mpas_atm_core.o
 
 rose_depends: $(rose_depends_o)
 rose-compiler:
