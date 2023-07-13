@@ -23,11 +23,11 @@
 
    ! Field precision
    integer, parameter :: MPAS_IO_SINGLE_PRECISION = 12, &
-                         MPAS_IO_DOUBLE_PRECISION = 13, &
+                         MPAS_IO_DOUBLE_PRECISION = 13
 #ifdef SINGLE_PRECISION
-                         MPAS_IO_NATIVE_PRECISION = MPAS_IO_SINGLE_PRECISION
+   integer, parameter :: MPAS_IO_NATIVE_PRECISION = MPAS_IO_SINGLE_PRECISION
 #else
-                         MPAS_IO_NATIVE_PRECISION = MPAS_IO_DOUBLE_PRECISION
+   integer, parameter :: MPAS_IO_NATIVE_PRECISION = MPAS_IO_DOUBLE_PRECISION
 #endif
 
    ! Unlimited / record dimension
