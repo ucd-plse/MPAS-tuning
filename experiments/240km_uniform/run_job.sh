@@ -1,7 +1,7 @@
 #!/bin/bash
-#PBS -N MPAS_run_job
+#PBS -N MPAS_240k_uniform_run_job
 #PBS -A UCDV0023
-#PBS -l walltime=00:10:00
+#PBS -l walltime=00:03:00
 #PBS -q regular
 #PBS -j oe
 #PBS -k eod
@@ -13,7 +13,7 @@ mkdir -p $TMPDIR
 
 make clean
 
-timeout 300 mpirun ../../atmosphere_model
+timeout 100 mpirun ../../atmosphere_model
 status=$?
 if [ $status -eq 124 ]; then
     touch ./execution_timeout
