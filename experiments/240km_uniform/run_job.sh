@@ -5,7 +5,7 @@
 #PBS -q regular
 #PBS -j oe
 #PBS -k eod
-#PBS -l select=1:ncpus=36:mpiprocs=36:mem=45GB
+#PBS -l select=2:ncpus=32:mpiprocs=32:mem=45GB
 #PBS -l inception=login
 
 export TMPDIR=/glade/scratch/$USER/temp
@@ -13,7 +13,7 @@ mkdir -p $TMPDIR
 
 make clean
 
-timeout 100 mpirun ../../atmosphere_model
+timeout 100 mpirun -n 64 ../../atmosphere_model
 status=$?
 if [ $status -eq 124 ]; then
     touch ./execution_timeout
