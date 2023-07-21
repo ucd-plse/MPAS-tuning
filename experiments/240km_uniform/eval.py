@@ -56,7 +56,12 @@ for file_name in sorted([x for x in glob("history.*.nc")]):
     else:
         baseline_data = xr.open_dataset(os.path.join(log_path_for_baseline, file_name)).drop(non_float_vars_drop)
 
-    this_data_dict = (this_data - baseline_data).map(np.linalg.norm).to_array().to_pandas().to_dict()
+    abs_errs = np.abs(this_data-baseline_data)
+    rel_errs = xr.where(abs_errs == 0, abs_errs, np.abs(abs_errs/baseline_data))
+
+    # take the L2 norm of the relative errors over the mesh for each metric
+    this_data_dict = (rel_errs).map(np.linalg.norm).to_array().to_pandas().to_dict()
+
     this_data_dict["time"] = time
     data.append(this_data_dict)
 
