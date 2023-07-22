@@ -4100,13 +4100,8 @@ module atm_time_integration
          tempField % next => null()
          tempField % isActive = .true.
 
-         if ( KIND(scale_arr_buffer) == KIND(scale_arr) ) then
-            tempField % array => scale_arr
-         else
-            scale_arr_buffer = scale_arr
-            tempField % array => scale_arr_buffer
-         end if
-         
+         scale_arr_buffer = scale_arr
+         tempField % array => scale_arr_buffer
          call mpas_dmpar_exch_halo_field(tempField, (/ 1 /))
 !$OMP END MASTER
 !$OMP BARRIER
