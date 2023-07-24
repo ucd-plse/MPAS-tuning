@@ -3999,8 +3999,8 @@ module atm_time_integration
 
 !DIR$ IVDEP
             do k=1,nVertLevels
-               scale_arr(k,SCALE_IN, iCell) = - rdnw(k)*(min(0.0_RKIND,wdtn(k+1,iCell))-max(0.0_RKIND,wdtn(k,iCell)))
-               scale_arr(k,SCALE_OUT,iCell) = - rdnw(k)*(max(0.0_RKIND,wdtn(k+1,iCell))-min(0.0_RKIND,wdtn(k,iCell)))
+               scale_arr_buffer(k,SCALE_IN, iCell) = - rdnw(k)*(min(0.0_RKIND,wdtn(k+1,iCell))-max(0.0_RKIND,wdtn(k,iCell)))
+               scale_arr_buffer(k,SCALE_OUT,iCell) = - rdnw(k)*(max(0.0_RKIND,wdtn(k+1,iCell))-min(0.0_RKIND,wdtn(k,iCell)))
             end do
 
          end do
@@ -4035,9 +4035,9 @@ module atm_time_integration
                do k=1, nVertLevels
                   scalar_new(k,iCell) = scalar_new(k,iCell) - edgesOnCell_sign(i,iCell) * flux_upwind_tmp(k,iEdge) * invAreaCell(iCell)
  
-                  scale_arr(k,SCALE_OUT,iCell) = scale_arr(k,SCALE_OUT,iCell) &
+                  scale_arr_buffer(k,SCALE_OUT,iCell) = scale_arr_buffer(k,SCALE_OUT,iCell) &
                                                  - max(0.0_RKIND,edgesOnCell_sign(i,iCell)*flux_tmp(k,iEdge)) * invAreaCell(iCell)
-                  scale_arr(k,SCALE_IN, iCell) = scale_arr(k,SCALE_IN, iCell) &
+                  scale_arr_buffer(k,SCALE_IN, iCell) = scale_arr_buffer(k,SCALE_IN, iCell) &
                                                  - min(0.0_RKIND,edgesOnCell_sign(i,iCell)*flux_tmp(k,iEdge)) * invAreaCell(iCell)
                end do
 
@@ -4057,12 +4057,12 @@ module atm_time_integration
             do k = 1, nVertLevels
 
                scale_factor = (s_max(k,iCell)*rho_zz_int(k,iCell) - scalar_new(k,iCell)) / &
-                    (scale_arr(k,SCALE_IN,iCell)  + eps)
-               scale_arr(k,SCALE_IN,iCell) = min( 1.0_RKIND, max( 0.0_RKIND, scale_factor) )
+                    (scale_arr_buffer(k,SCALE_IN,iCell)  + eps)
+               scale_arr_buffer(k,SCALE_IN,iCell) = min( 1.0_RKIND, max( 0.0_RKIND, scale_factor) )
 
                scale_factor = (s_min(k,iCell)*rho_zz_int(k,iCell) - scalar_new(k,iCell)) / &
-                    (scale_arr(k,SCALE_OUT,iCell) - eps)
-               scale_arr(k,SCALE_OUT,iCell) = min( 1.0_RKIND, max( 0.0_RKIND, scale_factor) )
+                    (scale_arr_buffer(k,SCALE_OUT,iCell) - eps)
+               scale_arr_buffer(k,SCALE_OUT,iCell) = min( 1.0_RKIND, max( 0.0_RKIND, scale_factor) )
             end do
          end do
       else
@@ -4071,12 +4071,12 @@ module atm_time_integration
             do k = 1, nVertLevels
 
                scale_factor = (s_max(k,iCell)*rho_zz_new(k,iCell) - scalar_new(k,iCell)) / &
-                    (scale_arr(k,SCALE_IN,iCell)  + eps)
-               scale_arr(k,SCALE_IN,iCell) = min( 1.0_RKIND, max( 0.0_RKIND, scale_factor) )
+                    (scale_arr_buffer(k,SCALE_IN,iCell)  + eps)
+               scale_arr_buffer(k,SCALE_IN,iCell) = min( 1.0_RKIND, max( 0.0_RKIND, scale_factor) )
 
                scale_factor = (s_min(k,iCell)*rho_zz_new(k,iCell) - scalar_new(k,iCell)) / &
-                    (scale_arr(k,SCALE_OUT,iCell) - eps)
-               scale_arr(k,SCALE_OUT,iCell) = min( 1.0_RKIND, max( 0.0_RKIND, scale_factor) )
+                    (scale_arr_buffer(k,SCALE_OUT,iCell) - eps)
+               scale_arr_buffer(k,SCALE_OUT,iCell) = min( 1.0_RKIND, max( 0.0_RKIND, scale_factor) )
             end do
          end do
       end if
@@ -4100,8 +4100,8 @@ module atm_time_integration
          tempField % next => null()
          tempField % isActive = .true.
 
-         scale_arr_buffer = scale_arr
-         tempField % array => scale_arr_buffer
+         scale_arr = scale_arr_buffer 
+         tempField % array => scale_arr
          call mpas_dmpar_exch_halo_field(tempField, (/ 1 /))
 !$OMP END MASTER
 !$OMP BARRIER
