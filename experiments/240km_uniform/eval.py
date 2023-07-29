@@ -60,7 +60,7 @@ for file_name in sorted([x for x in glob("history.*.nc")]):
     rel_errs = xr.where(abs_errs == 0, abs_errs, np.abs(abs_errs/baseline_data))
 
     # take the L2 norm of the relative errors over the mesh for each metric
-    this_data_dict = (rel_errs).map(np.linalg.norm).to_array().to_pandas().to_dict()
+    this_data_dict = (rel_errs).map(np.max).to_array().to_pandas().to_dict()
 
     this_data_dict["time"] = time
     data.append(this_data_dict)
