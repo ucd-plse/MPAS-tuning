@@ -1,9 +1,8 @@
 #!/bin/bash
 
-export REPO_ROOT=/glade/work/jdvanover/latest_and_greatest/MPAS/MPAS-Model
-export PIO_INCLUDE=/glade/u/apps/ch/opt/pio/1.10.1/mpt/2.22/gnu/8.3.0//include
-export NETCDF_INCLUDE=/glade/u/apps/ch/opt/netcdf/4.7.1/gnu/8.3.0//include
-export PNETCDF_INCLUDE=/glade/u/apps/ch/opt/pnetcdf/1.12.1/mpt/2.22/gnu/8.3.0//include
+export REPO_ROOT=/root/precimonious-w-rose/submodules/MPAS-tuning
+export PIO_INCLUDE=/root/pio/include
+export PNETCDF_INCLUDE=/root/pnetcdf/include
 
 cd $(dirname "$0")/../
 source ./scripts/set_MPAS_env_gnu.sh
