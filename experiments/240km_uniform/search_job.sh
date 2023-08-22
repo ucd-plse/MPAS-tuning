@@ -2,15 +2,15 @@
 #PBS -N MPAS_master_job
 #PBS -A UCDV0023
 #PBS -l walltime=12:00:00
-#PBS -q regular
+#PBS -q main
+#PBS -l job_priority=regular
 #PBS -j oe
 #PBS -k eod
-#PBS -l select=1:ncpus=36:mpiprocs=36:mem=45GB
-#PBS -l inception=login
+#PBS -l select=1:ncpus=128:mpiprocs=128
 
 if [ -z  "$PBS_JOBNAME" ]
 then
-    export TMPDIR=/glade/scratch/$USER/temp
+    export TMPDIR=/glade/derecho/scratch/$USER/temp
     mkdir -p $TMPDIR
 
     source ${PROSE_REPO_PATH}/scripts/cheyenne/activate_PROSE_environment.sh

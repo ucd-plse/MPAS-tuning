@@ -2,18 +2,20 @@
 #PBS -N MPAS_240k_uniform_run_job
 #PBS -A UCDV0023
 #PBS -l walltime=00:03:00
-#PBS -q regular
+#PBS -q main
+#PBS -l job_priority=regular
 #PBS -j oe
 #PBS -k eod
-#PBS -l select=2:ncpus=32:mpiprocs=32:mem=45GB
-#PBS -l inception=login
+#PBS -l select=1:ncpus=64:mpiprocs=64
 
-export TMPDIR=/glade/scratch/$USER/temp
+export TMPDIR=/glade/derecho/scratch/$USER/temp
 mkdir -p $TMPDIR
+
+source ../../scripts/set_MPAS_env_intel.sh
 
 make clean
 
-timeout 100 mpirun -n 64 ../../atmosphere_model
+time mpirun -n 64 ../../atmosphere_model
 status=$?
 if [ $status -eq 124 ]; then
     touch ./execution_timeout

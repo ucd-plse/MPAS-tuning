@@ -2,13 +2,13 @@
 #PBS -N mpas_vtune_job
 #PBS -A UCDV0023
 #PBS -l walltime=1:00:00
-#PBS -q regular
+#PBS -q develop
+#PBS -l job_priority=economy
 #PBS -j oe
 #PBS -k eod
-#PBS -l select=2:ncpus=32:mpiprocs=32:mem=45GB
-#PBS -l inception=login
+#PBS -l select=1:ncpus=64:mpiprocs=64
 
-export TMPDIR=/glade/scratch/$USER/$PWD
+export TMPDIR=/glade/derecho/scratch/$USER/$PWD
 mkdir -p $TMPDIR
 
 export MPI_USING_VTUNE=true
@@ -20,14 +20,13 @@ rm -rf vtune_output
 mkdir vtune_output
 
 # analysis runs
-for analysis_type in hotspots hpc-performance
+for analysis_type in hotspots
 do
     ### Run the executable
     mpirun -n 64 vtune --collect=$analysis_type --result-dir=./vtune_output/$analysis_type --trace-mpi --return-app-exitcode -- ../../atmosphere_model
     err="${?}"
     if [ "${err}" -eq 0 ]
     then
-        mv max* ./vtune_output
         for x in ./vtune_output/$analysis_type*
         do
             if [ "$analysis_type" = "hotspots" ]

@@ -140,9 +140,9 @@ ifort:
 	"FC_PARALLEL = mpif90" \
 	"CC_PARALLEL = mpicc" \
 	"CXX_PARALLEL = mpicxx" \
-	"FC_SERIAL = ifort" \
-	"CC_SERIAL = icc" \
-	"CXX_SERIAL = icpc" \
+	"FC_SERIAL = ifx" \
+	"CC_SERIAL = icx" \
+	"CXX_SERIAL = icpx" \
 	"FFLAGS_PROMOTION = -real-size 64" \
 	"FFLAGS_OPT = -O3 -convert big_endian -free -align array64byte -march=core-avx2" \
 	"CFLAGS_OPT = -O3" \
