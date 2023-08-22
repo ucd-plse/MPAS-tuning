@@ -1,6 +1,5 @@
 #!/bin/bash
 
-export REPO_ROOT=/glade/work/jdvanover/latest_and_greatest/MPAS/MPAS-Model
 export PIO_INCLUDE=/glade/u/apps/ch/opt/pio/1.10.1/mpt/2.25/intel/2022.1//include
 export NETCDF_INCLUDE=/glade/u/apps/ch/opt/netcdf/4.8.1/intel/2022.1//include
 export PNETCDF_INCLUDE=/glade/u/apps/ch/opt/pnetcdf/1.12.2/mpt/2.25/intel/2022.1//include
@@ -58,6 +57,6 @@ cd ..
 if [ -e src/atmosphere_model ]; then mv src/atmosphere_model .; fi
 
 cd src/core_atmosphere
-if [ ! -e ${REPO_ROOT}/default_inputs ]; then mkdir ${REPO_ROOT}/default_inputs; fi
-cp default_inputs/* ${REPO_ROOT}/default_inputs/.
-cd ${REPO_ROOT}/default_inputs; for FILE in `ls -1`; do if [ ! -e ../$FILE ]; then cp $FILE ../.; fi; done
+if [ ! -e ../../default_inputs ]; then mkdir ../../default_inputs; fi
+cp default_inputs/* ../../default_inputs/.
+cd ../../default_inputs; for FILE in `ls -1`; do if [ ! -e ../$FILE ]; then cp $FILE ../.; fi; done
