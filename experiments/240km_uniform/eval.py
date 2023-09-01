@@ -36,7 +36,7 @@ log_path_for_baseline = sys.argv[2]
 
 cost = 0
 try:
-    with open(os.path.join(log_path, "stdout.txt"), "r") as f:
+    with open(os.path.join(log_path, "outlog.txt"), "r") as f:
         for line in f.readlines():
             if line.startswith("  1 total time"):
                 cost = float(line.split()[3])
