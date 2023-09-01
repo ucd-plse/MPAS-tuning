@@ -1,20 +1,18 @@
 #!/bin/bash
-#PBS -N mpas_vtune_job
+#PBS -N MPAS_vtune_job
 #PBS -A UCDV0023
 #PBS -l walltime=1:00:00
 #PBS -q develop
-#PBS -l job_priority=economy
+#PBS -l job_priority=regular
 #PBS -j oe
 #PBS -k eod
-#PBS -l select=1:ncpus=64:mpiprocs=64
+#PBS -l select=1:ncpus=64:mpiprocs=64:mem=235GB
 
-export TMPDIR=/glade/derecho/scratch/$USER/$PWD
-mkdir -p $TMPDIR
+module load vtune
 
 export MPI_USING_VTUNE=true
-
-module load intel/2022.1
-module load mpt
+export TMPDIR=/glade/derecho/scratch/$USER/$PWD
+mkdir -p $TMPDIR
 
 rm -rf vtune_output
 mkdir vtune_output

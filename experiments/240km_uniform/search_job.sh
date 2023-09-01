@@ -6,7 +6,7 @@
 #PBS -l job_priority=regular
 #PBS -j oe
 #PBS -k eod
-#PBS -l select=1:ncpus=128:mpiprocs=128
+#PBS -l select=1:ncpus=128:mpiprocs=128:mem=235GB
 
 if [ -z  "$PBS_JOBNAME" ]
 then

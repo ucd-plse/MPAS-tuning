@@ -6,16 +6,14 @@
 #PBS -l job_priority=regular
 #PBS -j oe
 #PBS -k eod
-#PBS -l select=1:ncpus=64:mpiprocs=64
+#PBS -l select=1:ncpus=64:mpiprocs=64:mem=235GB
 
 export TMPDIR=/glade/derecho/scratch/$USER/temp
 mkdir -p $TMPDIR
 
-source ../../scripts/set_MPAS_env_intel.sh
-
 make clean
 
-time mpirun -n 64 ../../atmosphere_model
+timeout 360 mpirun -n 64 ../../atmosphere_model
 status=$?
 if [ $status -eq 124 ]; then
     touch ./execution_timeout
@@ -25,5 +23,4 @@ else
     touch ./execution_fail
 fi
 
-mv log.atmosphere.0000.out stdout.txt
-ln -sf stdout.txt stderr.txt
+cat log.atmosphere.0000.out
