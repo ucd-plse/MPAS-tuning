@@ -3,6 +3,8 @@
 OBJS = mpas_subdriver.o \
        mpas.o
 
+include gptl.mk
+
 all:
 	($(MAKE) clean)
 	($(MAKE) driver)

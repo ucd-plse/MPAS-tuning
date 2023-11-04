@@ -687,6 +687,8 @@ else
 	override CPPFLAGS += -DMPAS_GIT_VERSION="unknown"
 endif # END OF GIT DESCRIBE VERSION
 
+include gptl.mk
+
 ####################################################
 # Section for adding external libraries and includes
 ####################################################

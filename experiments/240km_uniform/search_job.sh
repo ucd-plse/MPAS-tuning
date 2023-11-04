@@ -6,14 +6,7 @@
 #PBS -l job_priority=regular
 #PBS -j oe
 #PBS -k eod
-#PBS -l select=1:ncpus=128:mpiprocs=128:mem=235GB
+#PBS -l select=10:ncpus=128:mpiprocs=128:mem=235GB
 
-if [ -z  "$PBS_JOBNAME" ]
-then
-    export TMPDIR=/glade/derecho/scratch/$USER/temp
-    mkdir -p $TMPDIR
-
-    source ${PROSE_REPO_PATH}/scripts/cheyenne/activate_PROSE_environment.sh
-fi
-
+source ../../scripts/set_MPAS_env_intel.sh
 python3 ${PROSE_REPO_PATH}/scripts/prose_search.py -s setup.ini
