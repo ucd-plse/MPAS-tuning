@@ -13,6 +13,8 @@ OBJS = mpas_vector_operations.o \
 
 DEPS := $(shell find ../core_$(CORE)/ -type f -name "*.xml" ! -name "*processed.xml")
 
+include gptl.mk
+
 all: operators
 
 operators: $(OBJS) $(DEPS)

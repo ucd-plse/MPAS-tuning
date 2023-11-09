@@ -45,6 +45,8 @@ OBJS = \
 	mpas_atmphys_update.o              \
 	mpas_atmphys_vars.o
 
+include gptl.mk
+
 lookup_tables:
 	./checkout_data_files.sh
 

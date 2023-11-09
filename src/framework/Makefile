@@ -36,6 +36,8 @@ OBJS = mpas_kind_types.o \
        mpas_field_accessor.o \
        mpas_log.o
 
+include gptl.mk
+
 all: framework $(DEPS)
 
 framework: $(OBJS)

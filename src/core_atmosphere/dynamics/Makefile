@@ -3,6 +3,8 @@
 OBJS = mpas_atm_time_integration.o \
        mpas_atm_boundaries.o
 
+include gptl.mk
+
 all: $(OBJS)
 
 mpas_atm_time_integration.o: mpas_atm_boundaries.o mpas_atm_iau.o
