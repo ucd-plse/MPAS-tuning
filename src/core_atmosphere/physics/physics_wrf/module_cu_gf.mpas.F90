@@ -454,7 +454,6 @@ CONTAINS
 
 !-----------------------------------------------------------------------------------------------------------------
 
-#if defined(mpas)
    SUBROUTINE CUP_gf(zo,OUTQC,J,AAEQ,T,Q,Z1,sub_mas,                &
               TN,QO,PO,PRE,P,OUTT,OUTQ,DTIME,ktau,PSUR,US,VS,       &
               TCRIT,iens,                                           &
@@ -467,29 +466,8 @@ CONTAINS
               xl,rv,cp,g,ichoice,ipr,jpr,ierrc,ens4,                &
               beta,autoconv,aeroevap,itf,jtf,ktf,training,          &
               xmb,                                                  &
-#if ( WRF_DFI_RADAR == 1 )
-              do_capsuppress,cap_suppress_j,                        &             
-#endif
               use_excess,its,ite, jts,jte, kts,kte                  &
-                                                )
-#else
-   SUBROUTINE CUP_gf(zo,OUTQC,J,AAEQ,T,Q,Z1,sub_mas,                    &
-              TN,QO,PO,PRE,P,OUTT,OUTQ,DTIME,ktau,PSUR,US,VS,    &
-              TCRIT,iens,                                        &
-              ztexec,zqexec,ccn,ccnclean,rho,dx,mconv,                               &
-              omeg,maxiens,                          &
-              maxens,maxens2,maxens3,ensdim,                           &
-              APR_GR,APR_W,APR_MC,APR_ST,APR_AS,                       &
-              APR_CAPMA,APR_CAPME,APR_CAPMI,kbcon,ktop,cupclw,         &   !-lxz
-              xf_ens,pr_ens,xland,gsw,subt,subq,               &
-              xl,rv,cp,g,ichoice,ipr,jpr,ierrc,ens4,         &
-              beta,autoconv,aeroevap,itf,jtf,ktf,training,               &
-#if ( WRF_DFI_RADAR == 1 )
-              do_capsuppress,cap_suppress_j,                         &             
-#endif
-              use_excess,its,ite, jts,jte, kts,kte                                &
-                                                )
-#endif
+                                                                     )
 
    IMPLICIT NONE
 
@@ -4146,7 +4124,6 @@ CONTAINS
       end if
       return
       end function
-#if defined(mpas)
    SUBROUTINE CUP_gf_sh(xmb_out,zo,OUTQC,J,AAEQ,T,Q,Z1,                    &
               TN,QO,PO,PRE,P,OUTT,OUTQ,DTIME,ktau,PSUR,US,VS,    &
               TCRIT,                                        &
@@ -4157,18 +4134,6 @@ CONTAINS
               autoconv,itf,jtf,ktf,               &
               use_excess,its,ite, jts,jte, kts,kte                                &
                                                 )
-#else
-   SUBROUTINE CUP_gf_sh(xmb_out,zo,OUTQC,J,AAEQ,T,Q,Z1,                    &
-              TN,QO,PO,PRE,P,OUTT,OUTQ,DTIME,ktau,PSUR,US,VS,    &
-              TCRIT,                                        &
-              ztexec,zqexec,ccn,ccnclean,rho,dx,dhdt,                               &
-              kpbl,kbcon,ktop,cupclws,k22,         &   !-lxz
-              xland,gsw,tscl_kf,              &
-              xl,rv,cp,g,ichoice,ipr,jpr,ierr,ierrc,         &
-              autoconv,itf,jtf,ktf,               &
-              use_excess,its,ite, jts,jte, kts,kte                                &
-                                                )
-#endif
 
    IMPLICIT NONE
 

@@ -1,13 +1,8 @@
 MODULE module_sf_noah_seaice
-#if defined(mpas)
 use mpas_atmphys_constants,only: cp,R_D=>R_d,XLF,XLV,RHOWATER=>rho_w,STBOLT
 use mpas_atmphys_utilities, only: physics_error_fatal
 #define FATAL_ERROR(M) call physics_error_fatal( M )
-#else
-use module_model_constants, only : CP, R_D, XLF, XLV, RHOWATER, STBOLT
-use module_wrf_error
-#define FATAL_ERROR(M) call wrf_error_fatal( M )
-#endif
+
   use module_sf_noahlsm, only : RD, SIGMA, CPH2O, CPICE, LSUBF, EMISSI_S, &
        &                        HSTEP
 

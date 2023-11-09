@@ -1,13 +1,7 @@
 MODULE module_sf_noahlsm
-#if defined(mpas)
 use mpas_atmphys_constants,only: CP=>cp,R_D=>R_d,XLF=>xlf,XLV=>xlv,RHOWATER=>rho_w,STBOLT=>stbolt,KARMAN=>karman
 use mpas_atmphys_utilities, only: physics_error_fatal
 #define FATAL_ERROR(M) call physics_error_fatal( M )
-#else
-USE module_model_constants, only : CP, R_D, XLF, XLV, RHOWATER, STBOLT, KARMAN
-use module_wrf_error
-#define FATAL_ERROR(M) call wrf_error_fatal( M )
-#endif
 
 !ckay=KIRAN ALAPATY @ US EPA -- November 01, 2015
 !

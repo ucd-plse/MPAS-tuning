@@ -23,7 +23,6 @@
 !###########################################################
 module module_cu_tiedtke
 !
-#if defined(mpas)
  use mpas_atmphys_constants, only: &
           rd  => R_d, &
           rv  => R_v, &
@@ -32,10 +31,6 @@ module module_cu_tiedtke
           als => xls, &
           alf => xlf, &
           g   => gravity
-#else
-     use module_model_constants, only:rd=>r_d, rv=>r_v, &
-   &       cpd=>cp, alv=>xlv, als=>xls, alf=>xlf, g
-#endif
      implicit none
 
      real :: rcpd,vtmpc1,t000,hgfr,rhoh2o,tmelt, &
@@ -317,18 +312,11 @@ contains
       logical :: run_param , doing_adapt_dt , decided
 
 !-------other local variables----
-#if defined(mpas)
 !MPAS specific (Laura D. Fowler):
       real,intent(in),dimension(ims:ime,kms:kme,jms:jme):: znu
       integer,dimension(its:ite)     :: ktype
       real,dimension(its:ite,kts:kte):: sig1
       integer                        :: zz 
-#else
-      integer,dimension( its:ite ) :: ktype
-      real, dimension( kts:kte )   :: sig1      ! half sigma levels
-      real, dimension( kms:kme )   :: znu
-      integer                      :: zz 
-#endif
 !-----------------------------------------------------------------------
 
       do j=jts,jte
@@ -410,19 +398,12 @@ contains
         enddo
       enddo 
 
-#if defined(mpas)
       do k=kts,kte
          zz = kte+1-k
          do i=its,ite
             sig1(i,zz) = znu(i,k,j)
          enddo
       enddo
-#else
-      do k=kts,kte
-         zz = kte+1-k
-         sig1(zz) = znu(k)
-      enddo
-#endif
 
 !###############before call tiecnv, we need evap########################
 !       evap is the vapor flux at the surface
@@ -576,13 +557,9 @@ contains
           zlu(lq,km),     zlude(lq,km), zmfu(lq,km),  zmfd(lq,km),  &
           zqsat(lq,km),   pqc(lq,km),   pqi(lq,km),   zrain(lq)
 
-#if defined(mpas)
 !mpas specific (Laura D. Fowler/2016-08-18):
       real sig(km1)
       real sig1(lq,km)
-#else
-      real sig(km1),sig1(km)
-#endif
       integer icbot(lq),   ictop(lq),     ktype(lq),   lndj(lq)
       real  dt
       logical locum(lq)
@@ -831,12 +808,8 @@ contains
               pcte(klon,klev),        zcape(klon),        &
               zheat(klon),            zhhatt(klon,klev),  &
               zhmin(klon),            zrelh(klon)
-#if defined(mpas)
 !mpas specific (Laura D. Fowler/2016-08-18):
       real     sig1(klon,klev)
-#else
-      real     sig1(klev)
-#endif
       integer  ilab(klon,klev),        idtop(klon),   &
               ictop0(klon),           ilwmin(klon)    
       integer  kcbot(klon),            kctop(klon),   &
@@ -2282,12 +2255,8 @@ contains
               prfl(klon),             prain(klon)
       real     pten(klon,klev),        pdpmel(klon,klev), &
               psfl(klon),             zpsubcl(klon)
-#if defined(mpas)
 !mpas specific (Laura D. Fowler/2016-08-18):
       real sig1(klon,klev)
-#else
-      real     sig1(klev)
-#endif
       integer  kcbot(klon),            kctop(klon),     &
               kdtop(klon),            ktype(klon)
       logical  lddraf(klon),           ldcum(klon)
@@ -2392,12 +2361,8 @@ contains
       if(ldcum(jl).and.jk.ge.kcbot(jl).and. &
              zpsubcl(jl).gt.1.e-20) then
           zrfl=zpsubcl(jl)
-#if defined(mpas)
 !mpas specific (Laura D. Fowler/2016-08-18):
           cevapcu=cevapcu1*sqrt(cevapcu2*sqrt(sig1(jl,jk)))
-#else
-          cevapcu=cevapcu1*sqrt(cevapcu2*sqrt(sig1(jk)))
-#endif
           zrnew=(max(0.,sqrt(zrfl/zcucov)-   &
                   cevapcu*(paph(jl,jk+1)-paph(jl,jk))* &
                 max(0.,pqsen(jl,jk)-pqen(jl,jk))))**2*zcucov

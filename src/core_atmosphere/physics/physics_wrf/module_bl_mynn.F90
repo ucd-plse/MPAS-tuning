@@ -38,7 +38,6 @@
 
 MODULE module_bl_mynn
 
-#if defined(mpas)
  use mpas_atmphys_constants, only: &
           karman,        &
           g => gravity,  &
@@ -59,17 +58,6 @@ MODULE module_bl_mynn
  implicit none
  private
  public:: tv0,mym_condensation,mynn_bl_driver
-#else
-  USE module_model_constants, only: &
-       &karman, g, p1000mb, &
-       &cp, r_d, rcp, xlv, xlf,&
-       &svp1, svp2, svp3, svpt0, ep_1, ep_2
-  USE module_state_description, only: param_first_scalar, &
-       &p_qc, p_qr, p_qi, p_qs, p_qg, p_qnc, p_qni
-!-------------------------------------------------------------------
-  IMPLICIT NONE
-!-------------------------------------------------------------------
-#endif
 
 ! The parameters below depend on stability functions of module_sf_mynn.
   REAL, PARAMETER :: cphm_st=5.0, cphm_unst=16.0, &
@@ -2879,61 +2867,6 @@ ENDIF
     
   END SUBROUTINE mynn_bl_driver
 
-#if !defined(mpas)
-! ==================================================================
-  SUBROUTINE mynn_bl_init_driver(&
-       &Du,Dv,Dth,Dqv,Dqc,Dqi                       &
-       !&,Dqnc,Dqni                                  &
-       &,QKE,TKE_PBL,EXCH_H                         &
-       &,RESTART,ALLOWED_TO_READ,LEVEL              &
-       &,IDS,IDE,JDS,JDE,KDS,KDE                    &
-       &,IMS,IME,JMS,JME,KMS,KME                    &
-       &,ITS,ITE,JTS,JTE,KTS,KTE)
-
-    !---------------------------------------------------------------
-    LOGICAL,INTENT(IN) :: ALLOWED_TO_READ,RESTART
-    INTEGER,INTENT(IN) :: LEVEL
-
-    INTEGER,INTENT(IN) :: IDS,IDE,JDS,JDE,KDS,KDE,                    &
-         &                IMS,IME,JMS,JME,KMS,KME,                    &
-         &                ITS,ITE,JTS,JTE,KTS,KTE
-    
-    
-    REAL,DIMENSION(IMS:IME,KMS:KME,JMS:JME),INTENT(INOUT) :: &
-         &Du,Dv,Dth,Dqv,Dqc,Dqi, & !Dqnc,Dqni,
-         &QKE,TKE_PBL,EXCH_H
-
-    INTEGER :: I,J,K,ITF,JTF,KTF
-    
-    JTF=MIN0(JTE,JDE-1)
-    KTF=MIN0(KTE,KDE-1)
-    ITF=MIN0(ITE,IDE-1)
-    
-    IF(.NOT.RESTART)THEN
-       DO J=JTS,JTF
-          DO K=KTS,KTF
-             DO I=ITS,ITF
-                Du(i,k,j)=0.
-                Dv(i,k,j)=0.
-                Dth(i,k,j)=0.
-                Dqv(i,k,j)=0.
-                if( p_qc >= param_first_scalar ) Dqc(i,k,j)=0.
-                if( p_qi >= param_first_scalar ) Dqi(i,k,j)=0.
-                !if( p_qnc >= param_first_scalar ) Dqnc(i,k,j)=0.
-                !if( p_qni >= param_first_scalar ) Dqni(i,k,j)=0.
-                QKE(i,k,j)=0.
-                TKE_PBL(i,k,j)=0.
-                EXCH_H(i,k,j)=0.
-             ENDDO
-          ENDDO
-       ENDDO
-    ENDIF
-
-    mynn_level=level
-
-  END SUBROUTINE mynn_bl_init_driver
-
-#endif
 ! ==================================================================
 
   SUBROUTINE GET_PBLH(KTS,KTE,zi,thetav1D,qke1D,zw1D,dz1D,landsea,kzi)

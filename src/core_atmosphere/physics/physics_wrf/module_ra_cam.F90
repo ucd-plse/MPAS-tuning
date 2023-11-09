@@ -220,11 +220,7 @@ subroutine camrad(RTHRATENLW,RTHRATENSW,                           &
                      ims,ime, jms,jme, kms,kme,                    &
                      its,ite, jts,jte, kts,kte                     )
 
-#if defined(mpas)
    USE mpas_atmphys_utilities
-#else
-   USE module_wrf_error
-#endif
 
 !------------------------------------------------------------------
    IMPLICIT NONE
@@ -427,18 +423,10 @@ subroutine camrad(RTHRATENLW,RTHRATENSW,                           &
 
 !  if(naer_c.ne.naer) then
 !            WRITE( wrf_err_message , * ) 'naer_c ne naer ', naer_c, naer
-#if defined(mpas)
    if(naer_c.ne.naer_all) then
       write(mpas_err_message,*) 'naer_c-1 ne naer_all ', naer_c, naer_all
       call physics_error_fatal(mpas_err_message)
    endif
-#else
-   if(naer_c.ne.naer_all) then
-             WRITE( wrf_err_message , * ) 'naer_c-1 ne naer_all ', naer_c, naer_all
-             CALL wrf_error_fatal ( wrf_err_message )
-   endif 
-#endif
-
 
 
 ! update CO2 volume mixing ratio (co2vmr)
@@ -472,18 +460,11 @@ subroutine camrad(RTHRATENLW,RTHRATENSW,                           &
       enddo
 
 ! check for uninitialized arrays
-#if defined(mpas)
       if(abstot_3d(its,kts,kts,jts) .eq. 0.0 .and. .not.doabsems .and. dolw) then
         write(mpas_err_message,*) '   camrad lw: CAUTION: re-calculating abstot,absnxt, on restart'
         call physics_message(mpas_err_message)
         doabsems = .true.
       endif
-#else
-      if(abstot_3d(its,kts,kts,jts) .eq. 0.0 .and. .not.doabsems .and. dolw)then
-        CALL wrf_debug(0, 'camrad lw: CAUTION: re-calculating abstot, absnxt, emstot on restart')
-        doabsems = .true.
-      endif
-#endif
 
    do j =jts,jte
 
@@ -545,7 +526,6 @@ subroutine camrad(RTHRATENLW,RTHRATENSW,                           &
       enddo
 
 !ldf (05-15-2011): In MPAS num_months ranges from 1 to 12 (instead of 2 to 13 in WRF):
-#if defined(mpas)
       do m=1,num_months
       do k=1,levsiz
       do i = its,ite
@@ -554,16 +534,6 @@ subroutine camrad(RTHRATENLW,RTHRATENSW,                           &
       enddo
       enddo
       enddo
-#else
-      do m=1,num_months-1
-      do k=1,levsiz
-      do i = its,ite
-      ii = i - its + 1
-      ozmixmj(ii,k,m) = ozmixm(i,k,j,m+1)
-      enddo
-      enddo
-      enddo
-#endif
 
       do i = its,ite
       ii = i - its + 1
@@ -792,125 +762,6 @@ end subroutine camrad
 !the initialization of the longwave radiation code. Initialization is handled the same way
 !for the shortwave radiation code.
 
-#if !(defined(mpas))
-!====================================================================
-   SUBROUTINE camradinit(                                           &
-                         R_D,R_V,CP,G,STBOLT,EP_2,shalf,pptop,               &
-                         ozmixm,pin,levsiz,XLAT,num_months,         &
-                         m_psp,m_psn,m_hybi,aerosolcp,aerosolcn,    &
-                         paerlev,naer_c,                            &
-                     ids, ide, jds, jde, kds, kde,                  &
-                     ims, ime, jms, jme, kms, kme,                  &
-                     its, ite, jts, jte, kts, kte                   )
-
-   USE module_wrf_error
-   USE module_state_description
-   !USE module_configure
-
-!--------------------------------------------------------------------
-   IMPLICIT NONE
-!--------------------------------------------------------------------
-   INTEGER , INTENT(IN)           :: ids, ide, jds, jde, kds, kde,  &
-                                     ims, ime, jms, jme, kms, kme,  &
-                                     its, ite, jts, jte, kts, kte
-   REAL, intent(in)               :: pptop
-   REAL, INTENT(IN)               :: R_D,R_V,CP,G,STBOLT,EP_2
-
-   REAL,     DIMENSION( kms:kme )  :: shalf
-
-   INTEGER,      INTENT(IN   )    ::   levsiz, num_months
-   INTEGER,      INTENT(IN   )    ::   paerlev, naer_c
-
-   REAL, DIMENSION( ims:ime, jms:jme ), INTENT(IN   )  :: XLAT
-
-   REAL,  DIMENSION( ims:ime, levsiz, jms:jme, num_months ),      &
-          INTENT(INOUT   ) ::                                  OZMIXM
-
-   REAL,  DIMENSION(levsiz), INTENT(INOUT )  ::                   PIN
-   REAL,  DIMENSION(ims:ime, jms:jme), INTENT(INOUT )  ::                  m_psp,m_psn
-   REAL,  DIMENSION(paerlev), INTENT(INOUT )  ::               m_hybi
-   REAL,  DIMENSION( ims:ime, paerlev, jms:jme, naer_c ),      &
-          INTENT(INOUT) ::                             aerosolcp,aerosolcn
-
-   REAL(r8)    :: pstd
-   REAL(r8)    :: rh2o, cpair
-
-! These were made allocatable 20090612 to save static memory allocation. JM
-   IF ( .NOT. ALLOCATED( ksul   ) ) ALLOCATE( ksul( nrh, nspint ) )
-   IF ( .NOT. ALLOCATED( wsul   ) ) ALLOCATE( wsul( nrh, nspint ) )
-   IF ( .NOT. ALLOCATED( gsul   ) ) ALLOCATE( gsul( nrh, nspint ) )
-   IF ( .NOT. ALLOCATED( ksslt  ) ) ALLOCATE( ksslt( nrh, nspint ) )
-   IF ( .NOT. ALLOCATED( wsslt  ) ) ALLOCATE( wsslt( nrh, nspint ) )
-   IF ( .NOT. ALLOCATED( gsslt  ) ) ALLOCATE( gsslt( nrh, nspint ) )
-   IF ( .NOT. ALLOCATED( kcphil ) ) ALLOCATE( kcphil( nrh, nspint ) )
-   IF ( .NOT. ALLOCATED( wcphil ) ) ALLOCATE( wcphil( nrh, nspint ) )
-   IF ( .NOT. ALLOCATED( gcphil ) ) ALLOCATE( gcphil( nrh, nspint ) )
-
-   IF ( .NOT. ALLOCATED(ah2onw  ) ) ALLOCATE( ah2onw(n_p, n_tp, n_u, n_te, n_rh) )
-   IF ( .NOT. ALLOCATED(eh2onw  ) ) ALLOCATE( eh2onw(n_p, n_tp, n_u, n_te, n_rh) )
-   IF ( .NOT. ALLOCATED(ah2ow   ) ) ALLOCATE( ah2ow(n_p, n_tp, n_u, n_te, n_rh) )
-   IF ( .NOT. ALLOCATED(cn_ah2ow) ) ALLOCATE( cn_ah2ow(n_p, n_tp, n_u, n_te, n_rh) )
-   IF ( .NOT. ALLOCATED(cn_eh2ow) ) ALLOCATE( cn_eh2ow(n_p, n_tp, n_u, n_te, n_rh) )
-   IF ( .NOT. ALLOCATED(ln_ah2ow) ) ALLOCATE( ln_ah2ow(n_p, n_tp, n_u, n_te, n_rh) )
-   IF ( .NOT. ALLOCATED(ln_eh2ow) ) ALLOCATE( ln_eh2ow(n_p, n_tp, n_u, n_te, n_rh) )
-
-#if !defined(MAC_KLUDGE)
-   ozncyc = .true.
-   indirect = .true.
-   ixcldliq = 2
-   ixcldice = 3
-#if (NMM_CORE != 1)
-! aerosol array is not in the NMM Registry 
-!   since CAM radiation not available to NMM (yet)
-!   so this is blocked out to enable CAM compilation with NMM
-   idxSUL = P_SUL
-   idxSSLT = P_SSLT
-   idxDUSTfirst = P_DUST1
-   idxOCPHO = P_OCPHO
-   idxCARBONfirst = P_OCPHO
-   idxBCPHO = P_BCPHO
-   idxOCPHI = P_OCPHI
-   idxBCPHI = P_BCPHI
-   idxBG = P_BG
-   idxVOLC = P_VOLC
-#endif
-
-   pstd = 101325.0
-! from physconst module
-   mwdry = 28.966            ! molecular weight dry air ~ kg/kmole (shr_const_mwdair)
-   mwco2 =  44.              ! molecular weight co2
-   mwh2o = 18.016            ! molecular weight water vapor (shr_const_mwwv)
-   mwch4 =  16.              ! molecular weight ch4
-   mwn2o =  44.              ! molecular weight n2o
-   mwf11 = 136.              ! molecular weight cfc11
-   mwf12 = 120.              ! molecular weight cfc12
-   cappa = R_D/CP
-   rair = R_D
-   tmelt = 273.16            ! freezing T of fresh water ~ K 
-   r_universal = 6.02214e26 * STBOLT   ! Universal gas constant ~ J/K/kmole
-   latvap = 2.501e6          ! latent heat of evaporation ~ J/kg
-   latice = 3.336e5          ! latent heat of fusion ~ J/kg
-   zvir = R_V/R_D - 1.
-   rh2o = R_V
-   cpair = CP
-!
-   epsqs = EP_2
-
-   CALL radini(G, CP, EP_2, STBOLT, pstd*10.0 )
-   CALL esinti(epsqs  ,latvap  ,latice  ,rh2o    ,cpair   ,tmelt   )
-   CALL oznini(ozmixm,pin,levsiz,num_months,XLAT,                   &
-                     ids, ide, jds, jde, kds, kde,                  &
-                     ims, ime, jms, jme, kms, kme,                  &
-                     its, ite, jts, jte, kts, kte)                   
-   CALL aerosol_init(m_psp,m_psn,m_hybi,aerosolcp,aerosolcn,paerlev,naer_c,shalf,pptop,    &
-                     ids, ide, jds, jde, kds, kde,                  &
-                     ims, ime, jms, jme, kms, kme,                  &
-                     its, ite, jts, jte, kts, kte)
-
-#endif
-
-   END SUBROUTINE camradinit
-#endif
 #if !defined(MAC_KLUDGE)
 
 

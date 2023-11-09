@@ -16,15 +16,9 @@ MODULE module_sf_noahdrv
   USE module_sf_noahlsm_glacial_only, only: sflx_glacial
   USE module_sf_bep,      only: bep
   USE module_sf_bep_bem,  only: bep_bem
-#if defined(mpas)
 use mpas_atmphys_date_time, only: cal_mon_day
 use mpas_atmphys_utilities, only: physics_error_fatal
 #define FATAL_ERROR(M) call physics_error_fatal( M )
-#else
- use module_ra_gfdleta,  only: cal_mon_day
- use module_wrf_error
-#define FATAL_ERROR(M) call wrf_error_fatal( M )
-#endif
 #if ( WRF_CHEM == 1 )
   USE module_data_gocart_dust
 #endif

@@ -74,9 +74,6 @@ CONTAINS
                  ,ids,ide, jds,jde, kds,kde                        &
                  ,ims,ime, jms,jme, kms,kme                        &
                  ,its,ite, jts,jte, kts,kte                        &
-#ifdef WRF_CHEM
-                 ,evapprod, rainprod                               &
-#endif
                                                                    )
 !-------------------------------------------------------------------
   IMPLICIT NONE
@@ -198,9 +195,6 @@ CONTAINS
                     ,its,ite, jts,jte, kts,kte                     &
                     ,snow,snowncv                                  &
                     ,graupel,graupelncv                            &
-#ifdef WRF_CHEM
-                   ,rainprod2d, evapprod2d                        &
-#endif
                                                                    )
          DO K=kts,kte
          DO I=its,ite
@@ -284,9 +278,6 @@ CONTAINS
                    ,its,ite, jts,jte, kts,kte                     &
                    ,snow,snowncv                                  &
                    ,graupel,graupelncv                            &
-#ifdef WRF_CHEM
-                   ,rainprod2d, evapprod2d                        &
-#endif
                                                                   )
 !-------------------------------------------------------------------
   IMPLICIT NONE

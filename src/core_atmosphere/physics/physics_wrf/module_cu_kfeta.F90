@@ -15,7 +15,6 @@ MODULE module_cu_kfeta
 
 CONTAINS
 
-#if defined(mpas)
    SUBROUTINE KF_eta_CPS(                                            &
               ids,ide, jds,jde, kds,kde                              &
              ,ims,ime, jms,jme, kms,kme                              &
@@ -32,24 +31,6 @@ CONTAINS
              ,RTHCUTEN,RQVCUTEN,RQCCUTEN,RQRCUTEN                    &
              ,RQICUTEN,RQSCUTEN                                      &
                                                              )
-#else
-   SUBROUTINE KF_eta_CPS(                                    &
-              ids,ide, jds,jde, kds,kde                      &
-             ,ims,ime, jms,jme, kms,kme                      &
-             ,its,ite, jts,jte, kts,kte                      &
-             ,DT,KTAU,DX,CUDT,CURR_SECS,ADAPT_STEP_FLAG      &
-             ,rho,RAINCV,PRATEC,NCA                          &
-             ,U,V,TH,T,W,dz8w,Pcps,pi                        &
-             ,W0AVG,XLV0,XLV1,XLS0,XLS1,CP,R,G,EP1           &
-             ,EP2,SVP1,SVP2,SVP3,SVPT0                       &
-             ,STEPCU,CU_ACT_FLAG,warm_rain,CUTOP,CUBOT       &
-             ,QV                                             &
-            ! optionals
-             ,F_QV    ,F_QC    ,F_QR    ,F_QI    ,F_QS       &
-             ,RTHCUTEN,RQVCUTEN,RQCCUTEN,RQRCUTEN            &
-             ,RQICUTEN,RQSCUTEN                              &
-                                                             )
-#endif
 
 !
 !-------------------------------------------------------------
@@ -89,12 +70,8 @@ CONTAINS
 !MPAS specific (Laura D. Fowler 2013-08-23): In MPAS, the mean distance between cell
 !centers varies between cells, in particular, for variable-resolution meshes. Below,
 !we take into account the actual mean distance between cell centers. 
-#if defined(mpas)
    real,intent(in):: dt
    real,intent(in),dimension(ims:ime,jms:jme):: areaCell,dxCell
-#else
-   REAL,  INTENT(IN   ) :: DT, DX
-#endif
 
    REAL,  INTENT(IN   ) :: CUDT
    REAL,  INTENT(IN   ) :: CURR_SECS
@@ -167,11 +144,7 @@ CONTAINS
                                                       DQSDT, &
                                                        DTDT
 
-#if defined(mpas)
    real:: tst,tv,prs,rhoe,w0,scr1,dx,dxsq,tmp
-#else
-   REAL    ::         TST,tv,PRS,RHOE,W0,SCR1,DXSQ,tmp
-#endif
 
    INTEGER :: i,j,k,NTST
    REAL    :: lastdt = -1.0
@@ -179,9 +152,6 @@ CONTAINS
    LOGICAL :: run_param
    
 !
-#if !(defined(mpas))
-   DXSQ=DX*DX
-#endif
 
 
 !----------------------
@@ -271,12 +241,10 @@ CONTAINS
             CU_ACT_FLAG(i,j) = .false.
          ELSE
 
-#if defined(mpas)
             dxsq = areaCell(i,j)
             dx   = dxCell(i,j)
 !           write(0,201) j,i,dxsq,dx
 !           201 format(i3,i8,2(1x,e15.8))
-#endif
             DO k=kts,kte
                DQDT(k)=0.
                DQIDT(k)=0.

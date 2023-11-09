@@ -53,7 +53,6 @@ MODULE module_sf_mynn
 !      Performance with the Noah (or other) LSM is relatively unknown.
 !-------------------------------------------------------------------
 
-#if defined(mpas)
  use mpas_atmphys_constants,only: p1000mb => P0,cp,xlv,ep_2
  use module_bl_mynn,only: tv0,mym_condensation
  use module_sf_sfclay,only: sfclayinit
@@ -62,18 +61,6 @@ MODULE module_sf_mynn
  private
  public:: mynn_sf_init_driver, &
           sfclay_mynn 
-
-#else
-  USE module_model_constants, only: &
-       &p1000mb, cp, xlv, ep_2
-
-  USE module_sf_sfclay, ONLY: sfclayinit
-  USE module_bl_mynn,   only: tv0, mym_condensation
-  USE module_wrf_error
-!-------------------------------------------------------------------
-  IMPLICIT NONE
-!-------------------------------------------------------------------
-#endif
 
   REAL, PARAMETER :: xlvcp=xlv/cp, ep_3=1.-ep_2
  
@@ -116,9 +103,7 @@ CONTAINS
                      its,ite, jts,jte, kts,kte,                    &
                      ustm,ck,cka,cd,cda,isftcflx,iz0tlnd,          &
                      bl_mynn_cloudpdf                              &
-#if defined(mpas)
                     ,dxCell                                        &
-#endif
                          )
 !-------------------------------------------------------------------
       IMPLICIT NONE
@@ -256,11 +241,9 @@ CONTAINS
                                                            PSFCPA , &
                                                             SNOWH
 
-#if defined(mpas)
 !MPAS specific (Laura D. Fowler - 2014-12-02):
       real,intent(in),dimension(ims:ime,jms:jme),optional:: dxCell
 !MPAS specific end.
-#endif
 
       REAL,     DIMENSION( ims:ime, jms:jme )                    , &
                 INTENT(OUT  )               ::            U10,V10, &
@@ -399,16 +382,10 @@ CONTAINS
                 ids,ide, jds,jde, kds,kde,                         &
                 ims,ime, jms,jme, kms,kme,                         &
                 its,ite, jts,jte, kts,kte                          &
-#if defined(mpas)
 !MPAS specific (Laura D. Fowler - 2014-12-02):
                 ,isftcflx,iz0tlnd,                                 &
                 USTM(ims,j),CK(ims,j),CKA(ims,j),                  &
                 CD(ims,j),CDA(ims,j),dxCell(ims,j)                 &
-#else
-                ,isftcflx,iz0tlnd,                                 &
-                USTM(ims,j),CK(ims,j),CKA(ims,j),                  &
-                CD(ims,j),CDA(ims,j)                               &
-#endif
                                                                    )
 
       ENDDO
@@ -431,12 +408,7 @@ CONTAINS
                      ims,ime, jms,jme, kms,kme,                    &
                      its,ite, jts,jte, kts,kte                     &
                      ,isftcflx, iz0tlnd,                           &
-#if defined(mpas)
-!MPAS specific (Laura D. Fowler - 2014-12-02):
                      ustm,ck,cka,cd,cda,dxCell                     &
-#else
-                     ustm,ck,cka,cd,cda                            &
-#endif
                      )
 
 !-------------------------------------------------------------------
@@ -543,11 +515,9 @@ CONTAINS
       REAL    ::  restar,VISC,DQG,OLDUST,OLDTST
       REAL, PARAMETER :: psilim = -10.  ! ONLY AFFECTS z/L > 2.0
 
-#if defined(mpas)
 !MPAS specific (Laura D. Fowler - 2014-12-02):
       real,intent(in),dimension(ims:ime),optional:: dxCell
 !MPAS specific end.
-#endif
 
 !-------------------------------------------------------------------
 
