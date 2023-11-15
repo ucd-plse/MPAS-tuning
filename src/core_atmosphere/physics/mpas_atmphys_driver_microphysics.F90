@@ -15,6 +15,7 @@
  use mpas_atmphys_init_microphysics
  use mpas_atmphys_interface
  use mpas_atmphys_vars
+ use mpas_derived_types
 
 !wrf physics:
  use module_mp_kessler
