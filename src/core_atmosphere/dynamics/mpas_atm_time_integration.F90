@@ -30,6 +30,10 @@ module atm_time_integration
    use mpas_atmphys_utilities
 #endif
 
+#ifdef GPTL
+   use gptl
+#endif
+
    use mpas_atm_boundaries, only : nSpecZone, nRelaxZone, nBdyZone, mpas_atm_get_bdy_state, mpas_atm_get_bdy_tend  ! regional_MPAS addition
    
    use mpas_atm_iau  
@@ -91,12 +95,30 @@ module atm_time_integration
 
    function flux4(q_im2, q_im1, q_i, q_ip1, ua)
       real (kind=RKIND) :: q_im2, q_im1, q_i, q_ip1, ua, coef3, flux4
+#ifdef GPTL
+   integer :: gptl_ret, gptl_handle = 0
+#endif
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::flux4", gptl_handle)
+#endif 
       flux4 = ua*( 7.*(q_i + q_im1) - (q_ip1 + q_im2) )/12.0
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::flux4", gptl_handle)
+#endif
    end function flux4
 
    function flux3(q_im2, q_im1, q_i, q_ip1, ua, coef3)
       real (kind=RKIND) :: q_im2, q_im1, q_i, q_ip1, ua, coef3, flux3
+#ifdef GPTL
+   integer :: gptl_ret, gptl_handle = 0
+#endif
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::flux3", gptl_handle)
+#endif 
       flux3 = flux4(q_im2, q_im1, q_i, q_ip1, ua) + coef3*abs(ua)*((q_ip1 - q_im2)-3.*(q_i-q_im1))/12.0
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::flux3", gptl_handle)
+#endif
    end function flux3
 
    subroutine atm_timestep(domain, dt, nowTime, itimestep)
@@ -244,7 +266,9 @@ module atm_time_integration
 
       real (kind=RKIND)  :: time_dyn_step
       logical, parameter :: debug = .false.
-
+#ifdef GPTL
+   integer :: gptl_ret, gptl_handle = 0
+#endif
 
       !
       ! Retrieve configuration options
@@ -284,6 +308,9 @@ module atm_time_integration
       call mpas_pool_get_dimension(state, 'nEdges', nEdges)
       call mpas_pool_get_dimension(state, 'nVertLevels', nVertLevels)
 
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
       allocate(qtot(nVertLevels,nCells+1))
       qtot(:,nCells+1) = 0.0_RKIND
       allocate(tend_rtheta_physics(nVertLevels,nCells+1))
@@ -306,7 +333,9 @@ module atm_time_integration
         dt_dynamics = dt
         call mpas_log_write(' coupled RK3 dynamics-transport integration ')
       end if
-      if (.not. config_scalar_advection ) call mpas_log_write(' scalar advection turned off ')
+      if (.not. config_scalar_advection ) then
+         call mpas_log_write(' scalar advection turned off ')
+      end if
 
       number_of_sub_steps = config_number_of_sub_steps
 
@@ -339,7 +368,9 @@ module atm_time_integration
         number_sub_steps(3) = number_of_sub_steps
 
       end if
-        
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif         
 ! theta_m
       call mpas_dmpar_exch_halo_field(theta_m_field)
  
@@ -463,12 +494,18 @@ module atm_time_integration
       end do
       call mpas_timer_stop('physics_get_tend')
 #else
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
       !
       ! If no physics are being used, simply zero-out the physics tendency fields
       !
       tend_ru_physics(:,:) = 0.0_RKIND
       tend_rtheta_physics(:,:) = 0.0_RKIND
       tend_rho_physics(:,:) = 0.0_RKIND
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
 #endif
 
       !
@@ -604,6 +641,9 @@ module atm_time_integration
                call mpas_pool_get_dimension(block % dimensions, 'edgeSolveThreadStart', edgeSolveThreadStart)
                call mpas_pool_get_dimension(block % dimensions, 'edgeSolveThreadEnd', edgeSolveThreadEnd)
 
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                allocate(delsq_theta(nVertLevels,nCells+1))
                delsq_theta(:,nCells+1) = 0.0_RKIND
                allocate(delsq_w(nVertLevels,nCells+1))
@@ -618,7 +658,9 @@ module atm_time_integration
                delsq_vorticity(:,nVertices+1) = 0.0_RKIND
                allocate(dpdz(nVertLevels,nCells+1))
                dpdz(:,nCells+1) = 0.0_RKIND
-
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
 !$OMP PARALLEL DO
                do thread=1,nThreads
                   call atm_compute_dyn_tend( tend, tend_physics, state, diag, mesh, block % configs, nVertLevels, rk_step, dt, & 
@@ -630,7 +672,9 @@ module atm_time_integration
                                              edgeSolveThreadStart(thread), edgeSolveThreadEnd(thread))
                end do
 !$OMP END PARALLEL DO
-
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                deallocate(delsq_theta)
                deallocate(delsq_w)
 !!               deallocate(qtot)  ! deallocation after dynamics step complete, see below
@@ -641,6 +685,9 @@ module atm_time_integration
                deallocate(dpdz)
    
                block => block % next
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
             end do
             call mpas_timer_stop('atm_compute_dyn_tend')
 
@@ -718,9 +765,15 @@ module atm_time_integration
                   call mpas_pool_get_dimension(block % dimensions, 'edgeSolveThreadStart', edgeSolveThreadStart)
                   call mpas_pool_get_dimension(block % dimensions, 'edgeSolveThreadEnd', edgeSolveThreadEnd)
 
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                   allocate(ru_driving_tend(nVertLevels,nEdges+1))
                   allocate(rt_driving_tend(nVertLevels,nCells+1))
                   allocate(rho_driving_tend(nVertLevels,nCells+1))
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                   ru_driving_tend(1:nVertLevels,1:nEdges+1) =  mpas_atm_get_bdy_tend( clock, domain % blocklist, nVertLevels, nEdges, 'ru', 0.0_RKIND )
                   rt_driving_tend(1:nVertLevels,1:nCells+1) =  mpas_atm_get_bdy_tend( clock, domain % blocklist, nVertLevels, nCells, 'rtheta_m', 0.0_RKIND )
                   rho_driving_tend(1:nVertLevels,1:nCells+1) =  mpas_atm_get_bdy_tend( clock, domain % blocklist, nVertLevels, nCells, 'rho_zz', 0.0_RKIND )
@@ -734,11 +787,16 @@ module atm_time_integration
                                                                  edgeSolveThreadStart(thread), edgeSolveThreadEnd(thread) )
                   end do
 !$OMP END PARALLEL DO
-
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                   deallocate(ru_driving_tend)
                   deallocate(rt_driving_tend)
                   deallocate(rho_driving_tend)
                   block => block % next
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                end do
 
 ! -------- next, add in the tendencies for the horizontal filters and Rayleigh damping.  We will keep the spec zone and relax zone adjustments separate for now...
@@ -764,12 +822,17 @@ module atm_time_integration
                   call mpas_pool_get_dimension(block % dimensions, 'edgeThreadEnd', edgeThreadEnd)
                   call mpas_pool_get_dimension(block % dimensions, 'edgeSolveThreadStart', edgeSolveThreadStart)
                   call mpas_pool_get_dimension(block % dimensions, 'edgeSolveThreadEnd', edgeSolveThreadEnd)
-
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                   allocate(ru_driving_values(nVertLevels,nEdges+1))
                   allocate(rt_driving_values(nVertLevels,nCells+1))
                   allocate(rho_driving_values(nVertLevels,nCells+1))
 
                   time_dyn_step = dt_dynamics*real(dynamics_substep-1) + rk_timestep(rk_step)
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                   ru_driving_values(1:nVertLevels,1:nEdges+1) =  mpas_atm_get_bdy_state( clock, domain % blocklist, nVertLevels, nEdges, 'ru', time_dyn_step )
                   rt_driving_values(1:nVertLevels,1:nCells+1) =  mpas_atm_get_bdy_state( clock, domain % blocklist, nVertLevels, nCells, 'rtheta_m', time_dyn_step )
                   rho_driving_values(1:nVertLevels,1:nCells+1) =  mpas_atm_get_bdy_state( clock, domain % blocklist, nVertLevels, nCells, 'rho_zz', time_dyn_step )
@@ -784,11 +847,16 @@ module atm_time_integration
                                                                   edgeSolveThreadStart(thread), edgeSolveThreadEnd(thread) )
                   end do
 !$OMP END PARALLEL DO
-
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                   deallocate(ru_driving_values)
                   deallocate(rt_driving_values)
                   deallocate(rho_driving_values)
                   block => block % next
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                end do
 
 
@@ -962,13 +1030,20 @@ module atm_time_integration
                   call mpas_pool_get_dimension(mesh, 'nVertLevels', nVertLevels)
                   call mpas_pool_get_array(state, 'u', u, 2)
                   call mpas_pool_get_array(mesh, 'bdyMaskEdge', bdyMaskEdge)
-
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                   allocate(ru_driving_values(nVertLevels,nEdges+1))
 
                   time_dyn_step = dt_dynamics*real(dynamics_substep-1) + rk_timestep(rk_step)
-
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                   ru_driving_values(1:nVertLevels,1:nEdges+1) =  mpas_atm_get_bdy_state( clock, domain % blocklist, nVertLevels, nEdges, 'u', time_dyn_step )
                   ! do this inline at present - it is simple enough
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                   do iEdge = 1, nEdgesSolve
                      if(bdyMaskEdge(iEdge) > nRelaxZone) then
                         do k = 1, nVertLevels
@@ -976,9 +1051,14 @@ module atm_time_integration
                         end do
                      end if
                   end do
-
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                   ru_driving_values(1:nVertLevels,1:nEdges+1) =  mpas_atm_get_bdy_state( clock, domain % blocklist, nVertLevels, nEdges, 'ru', time_dyn_step )
                   call mpas_pool_get_array(diag, 'ru', u)
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                   ! do this inline at present - it is simple enough
                   do iEdge = 1, nEdges
                      if(bdyMaskEdge(iEdge) > nRelaxZone) then
@@ -989,9 +1069,17 @@ module atm_time_integration
                   end do
                   
                   block => block % next
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                end do
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                deallocate(ru_driving_values)
-
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
             end if  ! regional_MPAS addition
 
 !-------------------------------------------------------------------
@@ -1041,6 +1129,9 @@ module atm_time_integration
                   call mpas_pool_get_dimension(block % dimensions, 'edgeSolveThreadStart', edgeSolveThreadStart)
                   call mpas_pool_get_dimension(block % dimensions, 'edgeSolveThreadEnd', edgeSolveThreadEnd)
 
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                   allocate(scalar_old_arr(nVertLevels,nCells+1))
                   scalar_old_arr(:,nCells+1) = 0.0_RKIND
                   allocate(scalar_new_arr(nVertLevels,nCells+1))
@@ -1066,7 +1157,9 @@ module atm_time_integration
                      allocate(flux_tmp_arr(nVertLevels,nEdges+1))
                      flux_tmp_arr(:,nEdges+1) = 0.0_RKIND
                   end if
-
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                   !
                   ! Note: The advance_scalars_mono routine can be used without limiting, and thus, encompasses 
                   !       the functionality of the advance_scalars routine; however, it is noticeably slower, 
@@ -1100,7 +1193,9 @@ module atm_time_integration
                      end if
                   end do
 !$OMP END PARALLEL DO
-
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                   deallocate(scalar_old_arr)
                   deallocate(scalar_new_arr)
                   deallocate(s_max_arr)
@@ -1117,6 +1212,9 @@ module atm_time_integration
                   end if
 
                   block => block % next
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                end do
                if (rk_step < 3 .or. (.not. config_monotonic .and. .not. config_positive_definite)) then
                   call mpas_timer_stop('atm_advance_scalars')
@@ -1139,7 +1237,13 @@ module atm_time_integration
                      call mpas_pool_get_dimension(mesh, 'nVertLevels', nVertLevels)
                      call mpas_pool_get_dimension(mesh, 'nCells', nCells)
                      call mpas_pool_get_dimension(state, 'num_scalars', num_scalars)
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                      allocate(scalars_driving(num_scalars,nVertLevels,nCells+1))
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
 
 
                      !  get the scalar values driving the regional boundary conditions
@@ -1192,10 +1296,14 @@ module atm_time_integration
                                                      cellSolveThreadStart(thread), cellSolveThreadEnd(thread) )
                      end do
                      !$OMP END PARALLEL DO
-
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                      deallocate(scalars_driving)
-
                      block => block % next
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                   end do
 
                end if  ! regional_MPAS addition
@@ -1223,12 +1331,16 @@ module atm_time_integration
 
                call mpas_pool_get_dimension(block % dimensions, 'edgeThreadStart', edgeThreadStart)
                call mpas_pool_get_dimension(block % dimensions, 'edgeThreadEnd', edgeThreadEnd)
-
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                allocate(ke_vertex(nVertLevels,nVertices+1))
                ke_vertex(:,nVertices+1) = 0.0_RKIND
                allocate(ke_edge(nVertLevels,nEdges+1))
                ke_edge(:,nEdges+1) = 0.0_RKIND
-   
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
 !$OMP PARALLEL DO
                do thread=1,nThreads
                   call atm_compute_solve_diagnostics(dt, state, 2, diag, mesh, block % configs, &
@@ -1237,11 +1349,16 @@ module atm_time_integration
                                                      edgeThreadStart(thread), edgeThreadEnd(thread), rk_step)
                end do
 !$OMP END PARALLEL DO
-
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                deallocate(ke_vertex)
                deallocate(ke_edge)
 
                block => block % next
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
             end do
             call mpas_timer_stop('atm_compute_solve_diagnostics')
 
@@ -1360,12 +1477,16 @@ module atm_time_integration
 
       end do DYNAMICS_SUBSTEPS
 
-
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
       deallocate(qtot)  !  we are finished with these now
       deallocate(tend_rtheta_physics)
       deallocate(tend_rho_physics)
       deallocate(tend_ru_physics)
-
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
       !
       !  split transport, at present RK3
       !
@@ -1415,6 +1536,9 @@ module atm_time_integration
                call mpas_pool_get_dimension(block % dimensions, 'edgeSolveThreadStart', edgeSolveThreadStart)
                call mpas_pool_get_dimension(block % dimensions, 'edgeSolveThreadEnd', edgeSolveThreadEnd)
 
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                allocate(scalar_old_arr(nVertLevels,nCells+1))
                scalar_old_arr(:,nCells+1) = 0.0_RKIND
                allocate(scalar_new_arr(nVertLevels,nCells+1))
@@ -1444,6 +1568,9 @@ module atm_time_integration
                   allocate(flux_tmp_arr(nVertLevels,nEdges+1))
                   flux_tmp_arr(:,nEdges+1) = 0.0_RKIND
                end if
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
 
                !
                ! Note: The advance_scalars_mono routine can be used without limiting, and thus, encompasses 
@@ -1481,7 +1608,9 @@ module atm_time_integration
                   end if
                end do
 !$OMP END PARALLEL DO
-
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                deallocate(scalar_old_arr)
                deallocate(scalar_new_arr)
                deallocate(s_max_arr)
@@ -1500,6 +1629,9 @@ module atm_time_integration
                end if
 
                block => block % next
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
             end do
             if (rk_step < 3 .or. (.not. config_monotonic .and. .not. config_positive_definite)) then
                call mpas_timer_stop('atm_advance_scalars')
@@ -1524,7 +1656,13 @@ module atm_time_integration
                   call mpas_pool_get_dimension(mesh, 'nVertLevels', nVertLevels)
                   call mpas_pool_get_dimension(mesh, 'nCells', nCells)
                   call mpas_pool_get_dimension(state, 'num_scalars', num_scalars)
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                   allocate(scalars_driving(num_scalars,nVertLevels,nCells+1))
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
 
 
                   !  get the scalar values driving the regional boundary conditions
@@ -1577,10 +1715,15 @@ module atm_time_integration
                                                   cellSolveThreadStart(thread), cellSolveThreadEnd(thread) )
                   end do
 !$OMP END PARALLEL DO
-
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                   deallocate(scalars_driving)
 
                   block => block % next
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
                end do
 
             end if  ! regional_MPAS addition
@@ -1655,12 +1798,18 @@ module atm_time_integration
 
             !NOTE: The calculation of the tendency due to horizontal and vertical advection for the water vapor mixing ratio
             !requires that the subroutine atm_advance_scalars_mono was called on the third Runge Kutta step, so that a halo
-            !update for the scalars at time_levs(1) is applied. A halo update for the scalars at time_levs(2) is done above. 
+            !update for the scalars at time_levs(1) is applied. A halo update for the scalars at time_levs(2) is done above.
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif  
             if (config_monotonic) then
                rqvdynten(:,:) = ( scalars_2(index_qv,:,:) - scalars_1(index_qv,:,:) ) / config_dt
             else
                rqvdynten(:,:) = 0._RKIND
             end if
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
          end if
 
          !simply set to zero negative mixing ratios of different water species (for now):
@@ -1707,9 +1856,15 @@ module atm_time_integration
             call mpas_pool_get_dimension(block % dimensions, 'cellSolveThreadStart', cellSolveThreadStart)
             call mpas_pool_get_dimension(block % dimensions, 'cellSolveThreadEnd', cellSolveThreadEnd)
 
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
             allocate(rt_driving_values(nVertLevels,nCells+1))
             allocate(rho_driving_values(nVertLevels,nCells+1))
             time_dyn_step = dt  ! end of full timestep values
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
 
             rt_driving_values(1:nVertLevels,1:nCells+1) =  mpas_atm_get_bdy_state( clock, domain % blocklist, nVertLevels, nCells, 'rtheta_m', time_dyn_step )
             rho_driving_values(1:nVertLevels,1:nCells+1) =  mpas_atm_get_bdy_state( clock, domain % blocklist, nVertLevels, nCells, 'rho_zz', time_dyn_step )
@@ -1722,10 +1877,15 @@ module atm_time_integration
                                                    cellSolveThreadStart(thread), cellSolveThreadEnd(thread) )
             end do
 !$OMP END PARALLEL DO
-
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
             deallocate(rt_driving_values)
             deallocate(rho_driving_values)
             block => block % next
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
 
          end do
 
@@ -1746,8 +1906,13 @@ module atm_time_integration
             call mpas_pool_get_dimension(mesh, 'nVertLevels', nVertLevels)
             call mpas_pool_get_dimension(mesh, 'nCells', nCells)
             call mpas_pool_get_dimension(state, 'num_scalars', num_scalars)
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
             allocate(scalars_driving(num_scalars,nVertLevels,nCells+1))
-
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
 
             !  get the scalar values driving the regional boundary conditions
             !
@@ -1804,10 +1969,15 @@ module atm_time_integration
                                          cellSolveThreadStart(thread), cellSolveThreadEnd(thread) )
             end do
 !$OMP END PARALLEL DO
-
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
             deallocate(scalars_driving)
 
             block => block % next
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
+#endif 
          end do
 
       end if  ! regional_MPAS addition
@@ -2069,7 +2239,6 @@ module atm_time_integration
       real (kind=RKIND), dimension(nVertLevels) :: fzp
       real (kind=RKIND), dimension(nVertLevels) :: rdzu
       real (kind=RKIND), dimension(num_scalars,nVertLevels,nCells+1) :: scalars
-
       integer, intent(in) :: cellStart, cellEnd, edgeStart, edgeEnd
       integer, intent(in) :: cellSolveStart, cellSolveEnd, edgeSolveStart, edgeSolveEnd
 
@@ -2080,8 +2249,12 @@ module atm_time_integration
       integer :: iCell, k, iq
       real (kind=RKIND) :: dtseps, c2, qtotal, rcv
       real (kind=RKIND), dimension( nVertLevels ) :: b_tri, c_tri
-
-
+#ifdef GPTL
+   integer :: gptl_ret, gptl_handle = 0
+#endif
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_compute_vert_imp_coefs_work", gptl_handle)
+#endif
       !  set coefficients
       dtseps = .5*dts*(1.+epssm)
       rcv = rgas/(cp-rgas)
@@ -2148,7 +2321,9 @@ module atm_time_integration
          end do
 
       end do ! loop over cells
-
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_compute_vert_imp_coefs_work", gptl_handle)
+#endif
    end subroutine atm_compute_vert_imp_coefs_work
 
 
@@ -2300,7 +2475,12 @@ module atm_time_integration
       !
       integer :: iCell, iEdge, i, k
       real (kind=RKIND) :: flux
-
+#ifdef GPTL
+   integer :: gptl_ret, gptl_handle = 0
+#endif
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_set_smlstep_pert_variables_work", gptl_handle)
+#endif
       ! we solve for omega instead of w (see Klemp et al MWR 2007),
       ! so here we change the w_p tendency to an omega_p tendency
 
@@ -2326,7 +2506,9 @@ module atm_time_integration
          end do
          end if ! no conversion in specified zone
       end do
-
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_set_smlstep_pert_variables_work", gptl_handle)
+#endif
    end subroutine atm_set_smlstep_pert_variables_work
 
 
@@ -2551,6 +2733,12 @@ module atm_time_integration
       integer :: cell1, cell2, iEdge, iCell, i, k
       real (kind=RKIND) :: c2, rcv, rtheta_pp_tmp
       real (kind=RKIND) :: pgrad, flux, resm, rdts
+#ifdef GPTL
+   integer :: gptl_ret, gptl_handle = 0
+#endif
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_advance_acoustic_step_work", gptl_handle)
+#endif
 
 
       rcv = rgas / (cp - rgas)
@@ -2740,7 +2928,9 @@ module atm_time_integration
          end if
 
       end do !  end of loop over cells
-
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_advance_acoustic_step_work", gptl_handle)
+#endif
    end subroutine atm_advance_acoustic_step_work
 
 
@@ -2768,6 +2958,9 @@ module atm_time_integration
 
       real (kind=RKIND) :: divCell1, divCell2, rdts, coef_divdamp
       integer :: cell1, cell2, iEdge, k
+#ifdef GPTL
+   integer :: gptl_ret, gptl_handle = 0
+#endif
 
       call mpas_pool_get_array(mesh, 'cellsOnEdge', cellsOnEdge)
       call mpas_pool_get_array(mesh, 'specZoneMaskEdge', specZoneMaskEdge)
@@ -2782,7 +2975,9 @@ module atm_time_integration
 
       call mpas_pool_get_config(configs, 'config_smdiv', smdiv) 
       call mpas_pool_get_config(configs, 'config_len_disp', config_len_disp)
-
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_divergence_damping_3d", gptl_handle)
+#endif
       rdts = 1.0_RKIND / dts
       coef_divdamp = 2.0_RKIND * smdiv * config_len_disp * rdts
 
@@ -2812,6 +3007,9 @@ module atm_time_integration
             end do
          end if ! edges for block-owned cells
       end do ! end loop over edges
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_divergence_damping_3d", gptl_handle)
+#endif
 
    end subroutine atm_divergence_damping_3d
 
@@ -3000,7 +3198,12 @@ module atm_time_integration
       !
       integer :: i, iCell, iEdge, k, cell1, cell2
       real (kind=RKIND) :: invNs, rcv, p0, flux
-
+#ifdef GPTL
+   integer :: gptl_ret, gptl_handle = 0
+#endif
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_recover_large_step_variables_work", gptl_handle)
+#endif
 
       rcv = rgas/(cp-rgas)
       p0 = 1.0e+05  ! this should come from somewhere else...
@@ -3116,7 +3319,9 @@ module atm_time_integration
          end if ! addition for regional_MPAS, no spec zone update
 
       end do
-
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_recover_large_step_variables_work", gptl_handle)
+#endif
    end subroutine atm_recover_large_step_variables_work
 
 
@@ -3340,6 +3545,12 @@ module atm_time_integration
       real (kind=RKIND) :: weight_time_old, weight_time_new
       real (kind=RKIND), dimension(num_scalars,nVertLevels) :: scalar_tend_column  ! local storage to accumulate tendency
       real (kind=RKIND) :: u_direction, u_positive, u_negative
+#ifdef GPTL
+   integer :: gptl_ret, gptl_handle = 0
+#endif
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_advance_scalars_work", gptl_handle)
+#endif
 
       local_advance_density = advance_density
 
@@ -3486,6 +3697,9 @@ module atm_time_integration
             wdtn(iScalar,k) = wwAvg(k,iCell)*(fnm(k)*scalar_new(iScalar,k,iCell)+fnp(k)*scalar_new(iScalar,k-1,iCell))
          end do
           
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_advance_scalars_work", gptl_handle)
+#endif
 !DIR$ IVDEP
          do k=3,nVertLevels-1
 !DIR$ IVDEP
@@ -3495,6 +3709,9 @@ module atm_time_integration
                                         wwAvg(k,iCell), coef_3rd_order )
             end do
          end do
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_advance_scalars_work", gptl_handle)
+#endif
          k = nVertLevels
          do iScalar=1,num_scalars
             wdtn(iScalar,k) = wwAvg(k,iCell)*(fnm(k)*scalar_new(iScalar,k,iCell)+fnp(k)*scalar_new(iScalar,k-1,iCell))
@@ -3513,7 +3730,9 @@ module atm_time_integration
         end if ! specified zone regional_MPAS test
 
       end do
-
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_advance_scalars_work", gptl_handle)
+#endif
    end subroutine atm_advance_scalars_work
 
 
@@ -3726,6 +3945,9 @@ module atm_time_integration
       logical :: local_advance_density
 
       real (kind=RKIND), parameter :: eps=1.e-20
+#ifdef GPTL
+   integer :: gptl_ret, gptl_handle = 0
+#endif
 
       if (present(advance_density)) then
          local_advance_density = advance_density
@@ -3734,6 +3956,9 @@ module atm_time_integration
       end if
 
       call mpas_pool_get_field(state, 'scalars', scalars_old_field, 1)
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_advance_scalars_mono_work", gptl_handle)
+#endif
 
       !  for positive-definite or monotonic option, we first update scalars using the tendency from sources other than
       !  the resolved transport (these should constitute a positive definite update).  
@@ -3758,12 +3983,17 @@ module atm_time_integration
       end do
 
 
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_advance_scalars_mono_work", gptl_handle)
+#endif
 !$OMP BARRIER
 !$OMP MASTER
       call mpas_dmpar_exch_halo_field(scalars_old_field)
 !$OMP END MASTER
 !$OMP BARRIER
-
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_advance_scalars_mono_work", gptl_handle)
+#endif
 
       !
       ! Runge Kutta integration, so we compute fluxes from scalar_new values, update starts from scalar_old
@@ -3861,6 +4091,9 @@ module atm_time_integration
             s_max(k,iCell) = max(scalar_old(k-1,iCell),scalar_old(k,iCell),scalar_old(k+1,iCell))
             s_min(k,iCell) = min(scalar_old(k-1,iCell),scalar_old(k,iCell),scalar_old(k+1,iCell))
              
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_advance_scalars_mono_work", gptl_handle)
+#endif
 !DIR$ IVDEP
             do k=3,nVertLevels-1
                wdtn(k,iCell) = flux3( scalar_new(k-2,iCell),scalar_new(k-1,iCell),  &
@@ -3869,7 +4102,9 @@ module atm_time_integration
                s_max(k,iCell) = max(scalar_old(k-1,iCell),scalar_old(k,iCell),scalar_old(k+1,iCell))
                s_min(k,iCell) = min(scalar_old(k-1,iCell),scalar_old(k,iCell),scalar_old(k+1,iCell))
             end do
- 
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_advance_scalars_mono_work", gptl_handle)
+#endif
             k = nVertLevels
             wdtn(k,iCell) = wwAvg(k,iCell)*(fnm(k)*scalar_new(k,iCell)+fnp(k)*scalar_new(k-1,iCell))
             s_max(k,iCell) = max(scalar_old(k,iCell),scalar_old(k-1,iCell))
@@ -4102,7 +4337,13 @@ module atm_time_integration
 
          scale_arr_buffer = scale_arr  
          tempField % array => scale_arr_buffer
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_advance_scalars_mono_work", gptl_handle)
+#endif
          call mpas_dmpar_exch_halo_field(tempField, (/ 1 /))
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_advance_scalars_mono_work", gptl_handle)
+#endif
 !$OMP END MASTER
 !$OMP BARRIER
 
@@ -4217,7 +4458,9 @@ module atm_time_integration
          end do
 
       end do !  loop over scalars
-
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_advance_scalars_mono_work", gptl_handle)
+#endif
    end subroutine atm_advance_scalars_mono_work
 
 
@@ -4655,7 +4898,12 @@ module atm_time_integration
       real (kind=RKIND) :: kdiffu, z1, z2, z3, z4, zm, z0, zp, rayleigh_coef_inverse
 
       real (kind=RKIND), dimension( nVertLevels ) :: rayleigh_damp_coef
-
+#ifdef GPTL
+   integer :: gptl_ret, gptl_handle = 0
+#endif
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
+#endif
       prandtl_inv = 1.0_RKIND / prandtl
       invDt = 1.0_RKIND / dt
       inv_r_earth = 1.0_RKIND / r_earth
@@ -4789,9 +5037,15 @@ module atm_time_integration
 
          k = 2
          wduz(k) =  0.5*( rw(k,cell1)+rw(k,cell2))*(fzm(k)*u(k,iEdge)+fzp(k)*u(k-1,iEdge))
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
+#endif
          do k=3,nVertLevels-1
             wduz(k) = flux3( u(k-2,iEdge),u(k-1,iEdge),u(k,iEdge),u(k+1,iEdge),0.5*(rw(k,cell1)+rw(k,cell2)), 1.0_RKIND )
          end do
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
+#endif
          k = nVertLevels
          wduz(k) =  0.5*( rw(k,cell1)+rw(k,cell2))*(fzm(k)*u(k,iEdge)+fzp(k)*u(k-1,iEdge))
 
@@ -5166,9 +5420,15 @@ module atm_time_integration
 
          k = 2
          wdwz(k) =  0.25*(rw(k,icell)+rw(k-1,iCell))*(w(k,iCell)+w(k-1,iCell))
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
+#endif
          do k=3,nVertLevels-1
             wdwz(k) = flux3( w(k-2,iCell),w(k-1,iCell),w(k,iCell),w(k+1,iCell),0.5*(rw(k,iCell)+rw(k-1,iCell)), 1.0_RKIND )
          end do
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
+#endif
          k = nVertLevels
          wdwz(k) =  0.25*(rw(k,icell)+rw(k-1,iCell))*(w(k,iCell)+w(k-1,iCell))
 
@@ -5332,7 +5592,13 @@ module atm_time_integration
          wdtz(k) =  rw(k,icell)*(fzm(k)*theta_m(k,iCell)+fzp(k)*theta_m(k-1,iCell))  
          wdtz(k) =  wdtz(k)+(rw_save(k,icell)-rw(k,icell))*(fzm(k)*theta_m_save(k,iCell)+fzp(k)*theta_m_save(k-1,iCell))
          do k=3,nVertLevels-1
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
+#endif
             wdtz(k) = flux3( theta_m(k-2,iCell),theta_m(k-1,iCell),theta_m(k,iCell),theta_m(k+1,iCell), rw(k,iCell), coef_3rd_order )
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
+#endif
             wdtz(k) =  wdtz(k) + (rw_save(k,icell)-rw(k,iCell))*(fzm(k)*theta_m_save(k,iCell)+fzp(k)*theta_m_save(k-1,iCell))  ! rtheta_pp redefinition
          end do
          k = nVertLevels
@@ -5408,7 +5674,9 @@ module atm_time_integration
             tend_theta(k,iCell) = tend_theta(k,iCell) + tend_theta_euler(k,iCell) + tend_rtheta_physics(k,iCell)
          end do
       end do
-
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
+#endif
    end subroutine atm_compute_dyn_tend_work
 
 
@@ -5573,7 +5841,12 @@ module atm_time_integration
       logical, parameter :: hollingsworth=.true.
       real (kind=RKIND) :: ke_fact, efac
       logical :: reconstruct_v
-
+#ifdef GPTL
+   integer :: gptl_ret, gptl_handle = 0
+#endif
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_compute_solve_diagnostics_work", gptl_handle)
+#endif
 
       !
       ! Compute height on cell edges at velocity locations
@@ -5814,7 +6087,9 @@ module atm_time_integration
          end do
 
       end if  ! apvm upwinding
-
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_compute_solve_diagnostics_work", gptl_handle)
+#endif
    end subroutine atm_compute_solve_diagnostics_work
 
 
@@ -5860,7 +6135,9 @@ module atm_time_integration
       real (kind=RKIND), dimension(:,:), pointer :: exner_base
       real (kind=RKIND), dimension(:), pointer :: fzm, fzp
       real (kind=RKIND), dimension(:,:,:), pointer :: zb, zb3, zb_cell, zb3_cell
-
+#ifdef GPTL
+   integer :: gptl_ret, gptl_handle = 0
+#endif
 
       call mpas_pool_get_dimension(mesh, 'nCells', nCells)
       call mpas_pool_get_dimension(mesh, 'nEdges', nEdges)
@@ -5898,6 +6175,9 @@ module atm_time_integration
       call mpas_pool_get_array(mesh, 'zb_cell', zb_cell)
       call mpas_pool_get_array(mesh, 'zb3_cell', zb3_cell)
 
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_init_coupled_diagnostics", gptl_handle)
+#endif
 
       rcv = rgas / (cp-rgas)
       p0 = 1.e5  ! this should come from somewhere else...
@@ -5982,7 +6262,9 @@ module atm_time_integration
             pressure_base(k,iCell) = zz(k,iCell) * rgas * exner_base(k,iCell) * rtheta_base(k,iCell)      ! WCS addition 20180403
          end do
       end do
-
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_init_coupled_diagnostics", gptl_handle)
+#endif
    end subroutine atm_init_coupled_diagnostics
 
 
@@ -6020,7 +6302,9 @@ module atm_time_integration
       real (kind=RKIND), dimension(:,:), pointer :: theta_m_1, theta_m_2
       real (kind=RKIND), dimension(:,:), pointer :: rho_zz_1, rho_zz_2, rho_zz_old_split
       real (kind=RKIND), dimension(:,:), pointer :: ruAvg, wwAvg, ruAvg_split, wwAvg_split
-
+#ifdef GPTL
+   integer :: gptl_ret, gptl_handle = 0
+#endif
       call mpas_pool_get_array(diag, 'ru', ru)
       call mpas_pool_get_array(diag, 'ru_save', ru_save)
       call mpas_pool_get_array(diag, 'rw', rw)
@@ -6043,6 +6327,9 @@ module atm_time_integration
       call mpas_pool_get_array(state, 'theta_m', theta_m_2, 2)
       call mpas_pool_get_array(state, 'rho_zz', rho_zz_1, 1)
       call mpas_pool_get_array(state, 'rho_zz', rho_zz_2, 2)
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_rk_dynamics_substep_finish", gptl_handle)
+#endif
 
       inv_dynamics_split = 1.0_RKIND / real(dynamics_split)
       
@@ -6073,7 +6360,9 @@ module atm_time_integration
          wwAvg(:,cellStart:cellEnd) = wwAvg_split(:,cellStart:cellEnd) * inv_dynamics_split
          rho_zz_1(:,cellStart:cellEnd) = rho_zz_old_split(:,cellStart:cellEnd)
       end if
-
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_rk_dynamics_substep_finish", gptl_handle)
+#endif
    end subroutine atm_rk_dynamics_substep_finish
 
 
@@ -6126,7 +6415,12 @@ module atm_time_integration
       ! local variables
 
       integer :: iCell, k
-
+#ifdef GPTL
+   integer :: gptl_ret, gptl_handle = 0
+#endif
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_zero_gradient_w_bdy_work", gptl_handle)
+#endif
       do iCell=cellSolveStart,cellSolveEnd
          if (bdyMaskCell(iCell) > nRelaxZone) then
 !DIR$ IVDEP
@@ -6135,7 +6429,9 @@ module atm_time_integration
             end do
          end if  
       end do
-
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_zero_gradient_w_bdy_work", gptl_handle)
+#endif
    end subroutine atm_zero_gradient_w_bdy_work
 
 !-------------------------------------------------------------------------
@@ -6165,7 +6461,9 @@ module atm_time_integration
       integer, dimension(:), pointer :: bdyMaskCell, bdyMaskEdge
 
       integer :: iCell, iEdge, k
-
+#ifdef GPTL
+   integer :: gptl_ret, gptl_handle = 0
+#endif
       call mpas_pool_get_array(tend, 'u', tend_ru)
       call mpas_pool_get_array(tend, 'rho_zz', tend_rho)
       call mpas_pool_get_array(tend, 'theta_m', tend_rt)
@@ -6174,6 +6472,9 @@ module atm_time_integration
       call mpas_pool_get_array(mesh, 'bdyMaskEdge', bdyMaskEdge)
       call mpas_pool_get_array(tend, 'rt_diabatic_tend', rt_diabatic_tend)
       
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_bdy_adjust_dynamics_speczone_tend", gptl_handle)
+#endif
       do iCell = cellSolveStart, cellSolveEnd
          if(bdyMaskCell(iCell) > nRelaxZone) then
             do k=1, nVertLevels
@@ -6192,7 +6493,9 @@ module atm_time_integration
             end do
          end if
       end do
-      
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_bdy_adjust_dynamics_speczone_tend", gptl_handle)
+#endif
     end subroutine atm_bdy_adjust_dynamics_speczone_tend
 
 !-------------------------------------------------------------------------
@@ -6236,7 +6539,9 @@ module atm_time_integration
       integer :: vertex1, vertex2, iVertex
 
       real (kind=RKIND), dimension(:), pointer :: meshScalingRegionalCell, meshScalingRegionalEdge
-
+#ifdef GPTL
+   integer :: gptl_ret, gptl_handle = 0
+#endif
       call mpas_pool_get_array(tend, 'u', tend_ru)
       call mpas_pool_get_array(tend, 'rho_zz', tend_rho)
       call mpas_pool_get_array(tend, 'theta_m', tend_rt)
@@ -6266,6 +6571,9 @@ module atm_time_integration
       call mpas_pool_get_array(mesh, 'nEdgesOnCell',nEdgesOnCell)
       call mpas_pool_get_array(mesh, 'verticesOnEdge', verticesOnEdge)
       
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_bdy_adjust_dynamics_relaxzone_tend", gptl_handle)
+#endif
       !  First, Rayleigh damping terms for ru, rtheta_m and rho_zz
 
       do iCell = cellSolveStart, cellSolveEnd
@@ -6383,7 +6691,9 @@ module atm_time_integration
           end if  !  end test for relaxation-zone edge
 
        end do  !  end of loop over edges
-       
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_bdy_adjust_dynamics_relaxzone_tend", gptl_handle)
+#endif
    end subroutine atm_bdy_adjust_dynamics_relaxzone_tend
       
 
@@ -6411,12 +6721,17 @@ module atm_time_integration
       integer, dimension(:), pointer :: bdyMaskCell
       
       integer :: iCell, k
-
+#ifdef GPTL
+   integer :: gptl_ret, gptl_handle = 0
+#endif
       call mpas_pool_get_array(mesh, 'bdyMaskCell', bdyMaskCell)
       call mpas_pool_get_array(state, 'theta_m', theta_m, 2)
       call mpas_pool_get_array(diag, 'rtheta_p', rtheta_p)
       call mpas_pool_get_array(diag, 'rtheta_base', rtheta_base)
       
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_bdy_reset_speczone_values", gptl_handle)
+#endif
       do iCell = cellSolveStart, cellSolveEnd
          if( bdyMaskCell(iCell) > nRelaxZone) then
             do k=1, nVertLevels
@@ -6425,7 +6740,9 @@ module atm_time_integration
             end do
          end if
       end do
-
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_bdy_reset_speczone_values", gptl_handle)
+#endif
    end subroutine atm_bdy_reset_speczone_values
 
 !-------------------------------------------------------------------------
@@ -6512,7 +6829,12 @@ module atm_time_integration
       real (kind=RKIND), dimension(1:num_scalars,1:nVertLevels, cellSolveStart:cellSolveEnd) :: scalars_tmp
       real (kind=RKIND) :: edge_sign, laplacian_filter_coef, rayleigh_damping_coef, filter_flux
       integer :: iCell, iEdge, iScalar, i, k, cell1, cell2
-
+#ifdef GPTL
+   integer :: gptl_ret, gptl_handle = 0
+#endif
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_bdy_adjust_scalars_work", gptl_handle)
+#endif
       !---
 
       do iCell = cellSolveStart, cellSolveEnd ! threaded over cells
@@ -6578,7 +6900,9 @@ module atm_time_integration
             end do
          end if
       end do
-
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_bdy_adjust_scalars_work", gptl_handle)
+#endif
    end subroutine atm_bdy_adjust_scalars_work
 
 !-------------------------------------------------------------------------
@@ -6644,7 +6968,12 @@ module atm_time_integration
 
       real (kind=RKIND) :: laplacian_filter_coef, rayleigh_damping_coef, filter_flux
       integer :: iCell, iScalar, i, k, cell1, cell2
-
+#ifdef GPTL
+   integer :: gptl_ret, gptl_handle = 0
+#endif
+#ifdef GPTL
+   gptl_ret = gptlstart_handle("::atm_time_integration::atm_bdy_set_scalars_work", gptl_handle)
+#endif
       !---
 
       do iCell = cellSolveStart, cellSolveEnd ! threaded over cells
@@ -6663,7 +6992,9 @@ module atm_time_integration
          end if
 
       end do  ! updates now in temp storage
-            
+#ifdef GPTL
+   gptl_ret = gptlstop_handle("::atm_time_integration::atm_bdy_set_scalars_work", gptl_handle)
+#endif
    end subroutine atm_bdy_set_scalars_work
 
 !-------------------------------------------------------------------------
