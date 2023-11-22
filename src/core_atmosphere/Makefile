@@ -8,6 +8,8 @@ OBJS = mpas_atm_core.o \
        mpas_atm_dimensions.o \
        mpas_atm_threading.o
 
+include gptl.mk
+
 all: physcore dycore diagcore atmcore utilities
 
 core_reg:
