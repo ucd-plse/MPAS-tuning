@@ -94,7 +94,8 @@ module atm_time_integration
    contains
 
    function flux4(q_im2, q_im1, q_i, q_ip1, ua)
-      real (kind=RKIND) :: q_im2, q_im1, q_i, q_ip1, ua, coef3, flux4, c7_0 = 7.0, c12_0 = 12.0
+      real (kind=RKIND) :: q_im2, q_im1, q_i, q_ip1, ua, coef3, flux4
+      real (kind=RKIND), parameter :: c7_0 = 7.0, c12_0 = 12.0
 #ifdef GPTL
    integer :: gptl_ret, gptl_handle = 0
 #endif
