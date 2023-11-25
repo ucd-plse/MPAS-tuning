@@ -88,20 +88,20 @@ module atm_time_integration
    ! NB: We do not necessarily want this to vary with calendar, as it is used to set
    ! a timescale in seconds given a timescale in days, and it could be rather confusing
    ! if damping in the model changed with the simulation calendar
-   real (kind=RKIND), parameter, private :: seconds_per_day = 86400.0_RKIND
+   real (kind=RKIND), parameter, private :: seconds_per_day = 86400.0
 
 
    contains
 
    function flux4(q_im2, q_im1, q_i, q_ip1, ua)
-      real (kind=RKIND) :: q_im2, q_im1, q_i, q_ip1, ua, coef3, flux4
+      real (kind=RKIND) :: q_im2, q_im1, q_i, q_ip1, ua, coef3, flux4, c7_0 = 7.0, c12_0 = 12.0
 #ifdef GPTL
    integer :: gptl_ret, gptl_handle = 0
 #endif
 #ifdef GPTL
    gptl_ret = gptlstart_handle("::atm_time_integration::flux4", gptl_handle)
 #endif 
-      flux4 = ua*( 7.*(q_i + q_im1) - (q_ip1 + q_im2) )/12.0
+      flux4 = ua*( c7_0*(q_i + q_im1) - (q_ip1 + q_im2) )/c12_0
 #ifdef GPTL
    gptl_ret = gptlstop_handle("::atm_time_integration::flux4", gptl_handle)
 #endif
@@ -109,13 +109,14 @@ module atm_time_integration
 
    function flux3(q_im2, q_im1, q_i, q_ip1, ua, coef3)
       real (kind=RKIND) :: q_im2, q_im1, q_i, q_ip1, ua, coef3, flux3
+      real (kind=RKIND), parameter :: c3_0 = 3.0, c12_0 = 12.0
 #ifdef GPTL
    integer :: gptl_ret, gptl_handle = 0
 #endif
 #ifdef GPTL
    gptl_ret = gptlstart_handle("::atm_time_integration::flux3", gptl_handle)
 #endif 
-      flux3 = flux4(q_im2, q_im1, q_i, q_ip1, ua) + coef3*abs(ua)*((q_ip1 - q_im2)-3.*(q_i-q_im1))/12.0
+      flux3 = flux4(q_im2, q_im1, q_i, q_ip1, ua) + coef3*abs(ua)*((q_ip1 - q_im2)-c3_0*(q_i-q_im1))/c12_0
 #ifdef GPTL
    gptl_ret = gptlstop_handle("::atm_time_integration::flux3", gptl_handle)
 #endif
@@ -312,13 +313,13 @@ module atm_time_integration
    gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
 #endif 
       allocate(qtot(nVertLevels,nCells+1))
-      qtot(:,nCells+1) = 0.0_RKIND
+      qtot(:,nCells+1) = 0.0
       allocate(tend_rtheta_physics(nVertLevels,nCells+1))
-      tend_rtheta_physics(:,nCells+1) = 0.0_RKIND
+      tend_rtheta_physics(:,nCells+1) = 0.0
       allocate(tend_rho_physics(nVertLevels,nCells+1))
-      tend_rho_physics(:,nCells+1) = 0.0_RKIND
+      tend_rho_physics(:,nCells+1) = 0.0
       allocate(tend_ru_physics(nVertLevels,nEdges+1))
-      tend_ru_physics(:,nEdges+1) = 0.0_RKIND
+      tend_ru_physics(:,nEdges+1) = 0.0
 
       !
       ! Initialize RK weights
@@ -500,9 +501,9 @@ module atm_time_integration
       !
       ! If no physics are being used, simply zero-out the physics tendency fields
       !
-      tend_ru_physics(:,:) = 0.0_RKIND
-      tend_rtheta_physics(:,:) = 0.0_RKIND
-      tend_rho_physics(:,:) = 0.0_RKIND
+      tend_ru_physics(:,:) = 0.0
+      tend_rtheta_physics(:,:) = 0.0
+      tend_rho_physics(:,:) = 0.0
 #ifdef GPTL
    gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
 #endif 
@@ -645,19 +646,19 @@ module atm_time_integration
    gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
 #endif 
                allocate(delsq_theta(nVertLevels,nCells+1))
-               delsq_theta(:,nCells+1) = 0.0_RKIND
+               delsq_theta(:,nCells+1) = 0.0
                allocate(delsq_w(nVertLevels,nCells+1))
-               delsq_w(:,nCells+1) = 0.0_RKIND
+               delsq_w(:,nCells+1) = 0.0
 !!               allocate(qtot(nVertLevels,nCells+1))  ! initializing this earlier in solution sequence
                allocate(delsq_divergence(nVertLevels,nCells+1))
-               delsq_divergence(:,nCells+1) = 0.0_RKIND
+               delsq_divergence(:,nCells+1) = 0.0
                allocate(delsq_u(nVertLevels,nEdges+1))
-               delsq_u(:,nEdges+1) = 0.0_RKIND
+               delsq_u(:,nEdges+1) = 0.0
 !!               allocate(delsq_circulation(nVertLevels,nVertices+1))  ! no longer used -> removed 
                allocate(delsq_vorticity(nVertLevels,nVertices+1))
-               delsq_vorticity(:,nVertices+1) = 0.0_RKIND
+               delsq_vorticity(:,nVertices+1) = 0.0
                allocate(dpdz(nVertLevels,nCells+1))
-               dpdz(:,nCells+1) = 0.0_RKIND
+               dpdz(:,nCells+1) = 0.0
 #ifdef GPTL
    gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
 #endif 
@@ -1133,29 +1134,29 @@ module atm_time_integration
    gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
 #endif 
                   allocate(scalar_old_arr(nVertLevels,nCells+1))
-                  scalar_old_arr(:,nCells+1) = 0.0_RKIND
+                  scalar_old_arr(:,nCells+1) = 0.0
                   allocate(scalar_new_arr(nVertLevels,nCells+1))
-                  scalar_new_arr(:,nCells+1) = 0.0_RKIND
+                  scalar_new_arr(:,nCells+1) = 0.0
                   allocate(s_max_arr(nVertLevels,nCells+1))
-                  s_max_arr(:,nCells+1) = 0.0_RKIND
+                  s_max_arr(:,nCells+1) = 0.0
                   allocate(s_min_arr(nVertLevels,nCells+1))
-                  s_min_arr(:,nCells+1) = 0.0_RKIND
+                  s_min_arr(:,nCells+1) = 0.0
                   allocate(scale_array(nVertLevels,2,nCells+1))
-                  scale_array(:,:,nCells+1) = 0.0_RKIND
+                  scale_array(:,:,nCells+1) = 0.0
                   allocate(scale_array_buffer(nVertLevels,2,nCells+1))
-                  scale_array_buffer(:,:,nCells+1) = 0.0_RKIND
+                  scale_array_buffer(:,:,nCells+1) = 0.0
                   allocate(flux_array(nVertLevels,nEdges+1))
-                  flux_array(:,nEdges+1) = 0.0_RKIND
+                  flux_array(:,nEdges+1) = 0.0
                   allocate(wdtn_arr(nVertLevels+1,nCells+1))
-                  wdtn_arr(:,nCells+1) = 0.0_RKIND
+                  wdtn_arr(:,nCells+1) = 0.0
                   if (rk_step < 3 .or. (.not. config_monotonic .and. .not. config_positive_definite)) then
                      allocate(horiz_flux_array(num_scalars,nVertLevels,nEdges+1))
-                     horiz_flux_array(:,:,nEdges+1) = 0.0_RKIND
+                     horiz_flux_array(:,:,nEdges+1) = 0.0
                   else
                      allocate(flux_upwind_tmp_arr(nVertLevels,nEdges+1))
-                     flux_upwind_tmp_arr(:,nEdges+1) = 0.0_RKIND
+                     flux_upwind_tmp_arr(:,nEdges+1) = 0.0
                      allocate(flux_tmp_arr(nVertLevels,nEdges+1))
-                     flux_tmp_arr(:,nEdges+1) = 0.0_RKIND
+                     flux_tmp_arr(:,nEdges+1) = 0.0
                   end if
 #ifdef GPTL
    gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
@@ -1335,9 +1336,9 @@ module atm_time_integration
    gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
 #endif 
                allocate(ke_vertex(nVertLevels,nVertices+1))
-               ke_vertex(:,nVertices+1) = 0.0_RKIND
+               ke_vertex(:,nVertices+1) = 0.0
                allocate(ke_edge(nVertLevels,nEdges+1))
-               ke_edge(:,nEdges+1) = 0.0_RKIND
+               ke_edge(:,nEdges+1) = 0.0
 #ifdef GPTL
    gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
 #endif 
@@ -1540,33 +1541,33 @@ module atm_time_integration
    gptl_ret = gptlstart_handle("::atm_time_integration::atm_srk3", gptl_handle)
 #endif 
                allocate(scalar_old_arr(nVertLevels,nCells+1))
-               scalar_old_arr(:,nCells+1) = 0.0_RKIND
+               scalar_old_arr(:,nCells+1) = 0.0
                allocate(scalar_new_arr(nVertLevels,nCells+1))
-               scalar_new_arr(:,nCells+1) = 0.0_RKIND
+               scalar_new_arr(:,nCells+1) = 0.0
                allocate(s_max_arr(nVertLevels,nCells+1))
-               s_max_arr(:,nCells+1) = 0.0_RKIND
+               s_max_arr(:,nCells+1) = 0.0
                allocate(s_min_arr(nVertLevels,nCells+1))
-               s_min_arr(:,nCells+1) = 0.0_RKIND
+               s_min_arr(:,nCells+1) = 0.0
                allocate(scale_array(nVertLevels,2,nCells+1))
-               scale_array(:,:,nCells+1) = 0.0_RKIND
+               scale_array(:,:,nCells+1) = 0.0
                allocate(scale_array_buffer(nVertLevels,2,nCells+1))
-               scale_array_buffer(:,:,nCells+1) = 0.0_RKIND
+               scale_array_buffer(:,:,nCells+1) = 0.0
                allocate(flux_array(nVertLevels,nEdges+1))
-               flux_array(:,nEdges+1) = 0.0_RKIND
+               flux_array(:,nEdges+1) = 0.0
                allocate(wdtn_arr(nVertLevels+1,nCells+1))
-               wdtn_arr(:,nCells+1) = 0.0_RKIND
+               wdtn_arr(:,nCells+1) = 0.0
                allocate(rho_zz_int(nVertLevels,nCells+1))
-               rho_zz_int(:,nCells+1) = 0.0_RKIND
+               rho_zz_int(:,nCells+1) = 0.0
                allocate(scalar_tend_array(num_scalars,nVertLevels,nCells+1))
-               scalar_tend_array(:,:,nCells+1) = 0.0_RKIND
+               scalar_tend_array(:,:,nCells+1) = 0.0
                if (rk_step < 3 .or. (.not. config_monotonic .and. .not. config_positive_definite)) then
                   allocate(horiz_flux_array(num_scalars,nVertLevels,nEdges+1))
-                  horiz_flux_array(:,:,nEdges+1) = 0.0_RKIND
+                  horiz_flux_array(:,:,nEdges+1) = 0.0
                else
                   allocate(flux_upwind_tmp_arr(nVertLevels,nEdges+1))
-                  flux_upwind_tmp_arr(:,nEdges+1) = 0.0_RKIND
+                  flux_upwind_tmp_arr(:,nEdges+1) = 0.0
                   allocate(flux_tmp_arr(nVertLevels,nEdges+1))
-                  flux_tmp_arr(:,nEdges+1) = 0.0_RKIND
+                  flux_tmp_arr(:,nEdges+1) = 0.0
                end if
 #ifdef GPTL
    gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
@@ -1805,7 +1806,7 @@ module atm_time_integration
             if (config_monotonic) then
                rqvdynten(:,:) = ( scalars_2(index_qv,:,:) - scalars_1(index_qv,:,:) ) / config_dt
             else
-               rqvdynten(:,:) = 0._RKIND
+               rqvdynten(:,:) = 0.
             end if
 #ifdef GPTL
    gptl_ret = gptlstop_handle("::atm_time_integration::atm_srk3", gptl_handle)
@@ -2074,6 +2075,7 @@ module atm_time_integration
       real (kind=RKIND), dimension(:,:,:), pointer :: scalars
       real (kind=RKIND), dimension(:,:), pointer :: cqw
       real (kind=RKIND), dimension(:,:), pointer :: cqu
+      real (kind=RKIND), parameter :: c0_5 = 0.5, c1_0 = 1.0
 
       call mpas_pool_get_dimension(dims, 'nCells', nCells)
       call mpas_pool_get_dimension(dims, 'nEdges', nEdges)
@@ -2100,8 +2102,8 @@ module atm_time_integration
 !      do iCell = cellSolveStart,cellSolveEnd
       do iCell = cellStart,cellEnd
          do k = 2, nVertLevels
-            qtotal = 0.5*(qtot(k,iCell)+qtot(k-1,iCell))
-            cqw(k,iCell) = 1.0 / (1.0 + qtotal)
+            qtotal = c0_5*(qtot(k,iCell)+qtot(k-1,iCell))
+            cqw(k,iCell) = c1_0 / (c1_0 + qtotal)
          end do
       end do
 
@@ -2114,9 +2116,9 @@ module atm_time_integration
             do k = 1, nVertLevels
                qtotal = 0.0
                do iq = moist_start, moist_end
-                  qtotal = qtotal + 0.5 * ( scalars(iq, k, cell1) + scalars(iq, k, cell2) )
+                  qtotal = qtotal + c0_5 * ( scalars(iq, k, cell1) + scalars(iq, k, cell2) )
                end do
-               cqu(k,iEdge) = 1.0 / (1.0 + qtotal)
+               cqu(k,iEdge) = c1_0 / (c1_0 + qtotal)
             end do
          end if
       end do
@@ -2249,6 +2251,7 @@ module atm_time_integration
       integer :: iCell, k, iq
       real (kind=RKIND) :: dtseps, c2, qtotal, rcv
       real (kind=RKIND), dimension( nVertLevels ) :: b_tri, c_tri
+      real (kind=RKIND), parameter :: c0_5 = 0.5, c1_0 = 1.0
 #ifdef GPTL
    integer :: gptl_ret, gptl_handle = 0
 #endif
@@ -2256,7 +2259,7 @@ module atm_time_integration
    gptl_ret = gptlstart_handle("::atm_time_integration::atm_compute_vert_imp_coefs_work", gptl_handle)
 #endif
       !  set coefficients
-      dtseps = .5*dts*(1.+epssm)
+      dtseps = c0_5*dts*(c1_0+epssm)
       rcv = rgas/(cp-rgas)
       c2 = cp*rcv
 
@@ -2269,7 +2272,7 @@ module atm_time_integration
 
 !DIR$ IVDEP
          do k=2,nVertLevels
-            cofwr(k,iCell) =.5*dtseps*gravity*(fzm(k)*zz(k,iCell)+fzp(k)*zz(k-1,iCell))
+            cofwr(k,iCell) =c0_5*dtseps*gravity*(fzm(k)*zz(k,iCell)+fzp(k)*zz(k-1,iCell))
          end do
          coftz(1,iCell) = 0.0
 !DIR$ IVDEP
@@ -2288,7 +2291,7 @@ module atm_time_integration
 !            end do
             qtotal = qtot(k,iCell)
 
-            cofwt(k,iCell) = .5*dtseps*rcv*zz(k,iCell)*gravity*rb(k,iCell)/(1.+qtotal)  &
+            cofwt(k,iCell) = c0_5*dtseps*rcv*zz(k,iCell)*gravity*rb(k,iCell)/(c1_0+qtotal)  &
                                 *p(k,iCell)/((rtb(k,iCell)+rt(k,iCell))*pb(k,iCell))
 !            cofwt(k,iCell) = 0.
          end do
@@ -2304,7 +2307,7 @@ module atm_time_integration
             a_tri(k,iCell) = -cofwz(k  ,iCell)* coftz(k-1,iCell)*rdzw(k-1)*zz(k-1,iCell)   &
                          +cofwr(k  ,iCell)* cofrz(k-1  )                       &
                          -cofwt(k-1,iCell)* coftz(k-1,iCell)*rdzw(k-1)
-            b_tri(k) = 1.                                                  &
+            b_tri(k) = c1_0                                                  &
                          +cofwz(k  ,iCell)*(coftz(k  ,iCell)*rdzw(k  )*zz(k  ,iCell)   &
                                       +coftz(k  ,iCell)*rdzw(k-1)*zz(k-1,iCell))   &
                          -coftz(k  ,iCell)*(cofwt(k  ,iCell)*rdzw(k  )             &
@@ -2316,7 +2319,7 @@ module atm_time_integration
          end do
 !MGD VECTOR DEPENDENCE
          do k=2,nVertLevels
-            alpha_tri(k,iCell) = 1./(b_tri(k)-a_tri(k,iCell)*gamma_tri(k-1,iCell))
+            alpha_tri(k,iCell) = c1_0/(b_tri(k)-a_tri(k,iCell)*gamma_tri(k-1,iCell))
             gamma_tri(k,iCell) = c_tri(k)*alpha_tri(k,iCell)
          end do
 
@@ -2497,7 +2500,7 @@ module atm_time_integration
             do k = 2, nVertLevels
                flux = edgesOnCell_sign(i,iCell) * (fzm(k) * u_tend(k,iEdge) + fzp(k) * u_tend(k-1,iEdge))
                w_tend(k,iCell) = w_tend(k,iCell)   &
-                        - (zb_cell(k,i,iCell) + sign(1.0_RKIND, u_tend(k,iEdge)) * zb3_cell(k,i,iCell)) * flux
+                        - (zb_cell(k,i,iCell) + sign(1.0, u_tend(k,iEdge)) * zb3_cell(k,i,iCell)) * flux
             end do
          end do
 !DIR$ IVDEP
@@ -2733,6 +2736,7 @@ module atm_time_integration
       integer :: cell1, cell2, iEdge, iCell, i, k
       real (kind=RKIND) :: c2, rcv, rtheta_pp_tmp
       real (kind=RKIND) :: pgrad, flux, resm, rdts
+      real (kind=RKIND), parameter :: c1_0 = 1.0, c0_5 = 0.5
 #ifdef GPTL
    integer :: gptl_ret, gptl_handle = 0
 #endif
@@ -2743,8 +2747,8 @@ module atm_time_integration
 
       rcv = rgas / (cp - rgas)
       c2 = cp * rcv
-      resm = (1.0 - epssm) / (1.0 + epssm)
-      rdts = 1./dts
+      resm = (c1_0 - epssm) / (c1_0 + epssm)
+      rdts = c1_0/dts
 
       if(small_step /= 1) then  !  not needed on first small step 
 
@@ -2768,10 +2772,10 @@ module atm_time_integration
 
 !DIR$ IVDEP
               do k=1,nVertLevels
-                 pgrad = ((rtheta_pp(k,cell2)-rtheta_pp(k,cell1))*invDcEdge(iEdge) )/(.5*(zz(k,cell2)+zz(k,cell1)))
-                 pgrad = cqu(k,iEdge)*0.5*c2*(exner(k,cell1)+exner(k,cell2))*pgrad
-                 pgrad = pgrad + 0.5*zxu(k,iEdge)*gravity*(rho_pp(k,cell1)+rho_pp(k,cell2))
-                 ru_p(k,iEdge) = ru_p(k,iEdge) + dts*(tend_ru(k,iEdge) - (1.0_RKIND - specZoneMaskEdge(iEdge))*pgrad)
+                 pgrad = ((rtheta_pp(k,cell2)-rtheta_pp(k,cell1))*invDcEdge(iEdge) )/(c0_5*(zz(k,cell2)+zz(k,cell1)))
+                 pgrad = cqu(k,iEdge)*c0_5*c2*(exner(k,cell1)+exner(k,cell2))*pgrad
+                 pgrad = pgrad + c0_5*zxu(k,iEdge)*gravity*(rho_pp(k,cell1)+rho_pp(k,cell2))
+                 ru_p(k,iEdge) = ru_p(k,iEdge) + dts*(tend_ru(k,iEdge) - (c1_0 - specZoneMaskEdge(iEdge))*pgrad)
               end do
 
               ! accumulate ru_p for use later in scalar transport
@@ -2843,7 +2847,7 @@ module atm_time_integration
             do k=1,nVertLevels
                flux = edgesOnCell_sign(i,iCell)*dts*dvEdge(iEdge)*ru_p(k,iEdge) * invAreaCell(iCell)
                rs(k) = rs(k)-flux
-               ts(k) = ts(k)-flux*0.5*(theta_m(k,cell2)+theta_m(k,cell1))
+               ts(k) = ts(k)-flux*c0_5*(theta_m(k,cell2)+theta_m(k,cell1))
             end do
          end do
 
@@ -2862,7 +2866,7 @@ module atm_time_integration
 
 !DIR$ IVDEP
          do k=2, nVertLevels
-            wwavg(k,iCell) = wwavg(k,iCell) + 0.5*(1.0-epssm)*rw_p(k,iCell)
+            wwavg(k,iCell) = wwavg(k,iCell) + c0_5*(c1_0-epssm)*rw_p(k,iCell)
          end do
 
 !DIR$ IVDEP
@@ -2897,14 +2901,14 @@ module atm_time_integration
             rw_p(k,iCell) = (rw_p(k,iCell) + (rw_save(k  ,iCell) - rw(k  ,iCell)) -dts*dss(k,iCell)*               &
                         (fzm(k)*zz (k,iCell)+fzp(k)*zz (k-1,iCell))        &
                         *(fzm(k)*rho_zz(k,iCell)+fzp(k)*rho_zz(k-1,iCell))       &
-                                 *w(k,iCell)    )/(1.0+dts*dss(k,iCell)) &
+                                 *w(k,iCell)    )/(c1_0+dts*dss(k,iCell)) &
                          - (rw_save(k  ,iCell) - rw(k  ,iCell))
          end do
 
          ! accumulate (rho*omega)' for use later in scalar transport
 !DIR$ IVDEP
          do k=2,nVertLevels
-            wwAvg(k,iCell) = wwAvg(k,iCell) + 0.5*(1.0+epssm)*rw_p(k,iCell)
+            wwAvg(k,iCell) = wwAvg(k,iCell) + c0_5*(c1_0+epssm)*rw_p(k,iCell)
          end do
 
          ! update rho_pp and theta_pp given updated rw_p
@@ -2922,7 +2926,7 @@ module atm_time_integration
                rho_pp(k,iCell) = rho_pp(k,iCell) + dts*tend_rho(k,iCell)
                rtheta_pp(k,iCell) = rtheta_pp(k,iCell) + dts*tend_rt(k,iCell)
                rw_p(k,iCell) = rw_p(k,iCell) + dts*tend_rw(k,iCell)
-               wwAvg(k,iCell) = wwAvg(k,iCell) + 0.5*(1.0+epssm)*rw_p(k,iCell)
+               wwAvg(k,iCell) = wwAvg(k,iCell) + c0_5*(c1_0+epssm)*rw_p(k,iCell)
             end do
 
          end if
@@ -2958,6 +2962,7 @@ module atm_time_integration
 
       real (kind=RKIND) :: divCell1, divCell2, rdts, coef_divdamp
       integer :: cell1, cell2, iEdge, k
+      real (kind=RKIND), parameter :: c1_0 = 1.0, c2_0 = 2.0
 #ifdef GPTL
    integer :: gptl_ret, gptl_handle = 0
 #endif
@@ -2978,8 +2983,8 @@ module atm_time_integration
 #ifdef GPTL
    gptl_ret = gptlstart_handle("::atm_time_integration::atm_divergence_damping_3d", gptl_handle)
 #endif
-      rdts = 1.0_RKIND / dts
-      coef_divdamp = 2.0_RKIND * smdiv * config_len_disp * rdts
+      rdts = c1_0 / dts
+      coef_divdamp = c2_0 * smdiv * config_len_disp * rdts
 
       do iEdge=edgeStart,edgeEnd ! MGD do we really just need edges touching owned cells?
 
@@ -3001,7 +3006,7 @@ module atm_time_integration
 !!  scaled 3d divergence damping
                divCell1 = -(rtheta_pp(k,cell1)-rtheta_pp_old(k,cell1))
                divCell2 = -(rtheta_pp(k,cell2)-rtheta_pp_old(k,cell2))
-               ru_p(k,iEdge) = ru_p(k,iEdge) + coef_divdamp*(divCell2-divCell1)*(1.0_RKIND - specZoneMaskEdge(iEdge)) &
+               ru_p(k,iEdge) = ru_p(k,iEdge) + coef_divdamp*(divCell2-divCell1)*(c1_0 - specZoneMaskEdge(iEdge)) &
                                                       /(theta_m(k,cell1)+theta_m(k,cell2))
 
             end do
@@ -3198,6 +3203,7 @@ module atm_time_integration
       !
       integer :: i, iCell, iEdge, k, cell1, cell2
       real (kind=RKIND) :: invNs, rcv, p0, flux
+      real (kind=RKIND), parameter :: c2_0 = 2.0
 #ifdef GPTL
    integer :: gptl_ret, gptl_handle = 0
 #endif
@@ -3278,7 +3284,7 @@ module atm_time_integration
          do k = 1, nVertLevels
             ruAvg(k,iEdge) = ru_save(k,iEdge) + (ruAvg(k,iEdge) * invNs)
             ru(k,iEdge) = ru_save(k,iEdge) + ru_p(k,iEdge)
-            u(k,iEdge) = 2.*ru(k,iEdge)/(rho_zz(k,cell1)+rho_zz(k,cell2))
+            u(k,iEdge) = c2_0*ru(k,iEdge)/(rho_zz(k,cell1)+rho_zz(k,cell2))
          end do
       end do
 
@@ -3297,13 +3303,13 @@ module atm_time_integration
 
             flux = (cf1*ru(1,iEdge) + cf2*ru(2,iEdge) + cf3*ru(3,iEdge))
             w(1,iCell) = w(1,iCell) + edgesOnCell_sign(i,iCell) * &
-                                   (zb_cell(1,i,iCell) + sign(1.0_RKIND,flux)*zb3_cell(1,i,iCell))*flux
+                                   (zb_cell(1,i,iCell) + sign(1.0,flux)*zb3_cell(1,i,iCell))*flux
 
 !DIR$ IVDEP
             do k = 2, nVertLevels
                flux = (fzm(k)*ru(k,iEdge)+fzp(k)*ru(k-1,iEdge))
                w(k,iCell) = w(k,iCell) + edgesOnCell_sign(i,iCell) * &
-                                    (zb_cell(k,i,iCell)+sign(1.0_RKIND,flux)*zb3_cell(k,i,iCell))*flux
+                                    (zb_cell(k,i,iCell)+sign(1.0,flux)*zb3_cell(k,i,iCell))*flux
             end do
 
          end do
@@ -3545,6 +3551,7 @@ module atm_time_integration
       real (kind=RKIND) :: weight_time_old, weight_time_new
       real (kind=RKIND), dimension(num_scalars,nVertLevels) :: scalar_tend_column  ! local storage to accumulate tendency
       real (kind=RKIND) :: u_direction, u_positive, u_negative
+      real (kind=RKIND), parameter :: c1_0 = 1.0, c0_5 = 0.5
 #ifdef GPTL
    integer :: gptl_ret, gptl_handle = 0
 #endif
@@ -3587,7 +3594,7 @@ module atm_time_integration
             do j=1,10
 !DIR$ IVDEP
                do k=1,nVertLevels
-                  scalar_weight2(k,j) = adv_coefs(j,iEdge) + sign(1.0_RKIND,uhAvg(k,iEdge))*adv_coefs_3rd(j,iEdge)
+                  scalar_weight2(k,j) = adv_coefs(j,iEdge) + sign(1.0,uhAvg(k,iEdge))*adv_coefs_3rd(j,iEdge)
                end do
             end do
             do j=1,10
@@ -3618,7 +3625,7 @@ module atm_time_integration
                iAdvCell = advCellsForEdge(j,iEdge)
 !DIR$ IVDEP
                do k=1,nVertLevels
-                  scalar_weight = adv_coefs(j,iEdge) + sign(1.0_RKIND,uhAvg(k,iEdge))*adv_coefs_3rd(j,iEdge)
+                  scalar_weight = adv_coefs(j,iEdge) + sign(1.0,uhAvg(k,iEdge))*adv_coefs_3rd(j,iEdge)
 !DIR$ IVDEP
                   do iScalar=1,num_scalars
                      horiz_flux_arr(iScalar,k,iEdge) = horiz_flux_arr(iScalar,k,iEdge) + scalar_weight * scalar_new(iScalar,k,iAdvCell)
@@ -3634,9 +3641,9 @@ module atm_time_integration
             cell2 = cellsOnEdge(2,iEdge)
 !DIR$ IVDEP
             do k=1,nVertLevels
-               u_direction = sign(0.5_RKIND,uhAvg(k,iEdge))
-               u_positive = dvEdge(iEdge)*abs(u_direction + 0.5_RKIND)
-               u_negative = dvEdge(iEdge)*abs(u_direction - 0.5_RKIND)
+               u_direction = sign(0.5,uhAvg(k,iEdge))
+               u_positive = dvEdge(iEdge)*abs(u_direction + c0_5)
+               u_negative = dvEdge(iEdge)*abs(u_direction - c0_5)
 !DIR$ IVDEP
                do iScalar=1,num_scalars
                   horiz_flux_arr(iScalar,k,iEdge) = u_positive*scalar_new(iScalar,k,cell1) + u_negative*scalar_new(iScalar,k,cell2)
@@ -3719,7 +3726,7 @@ module atm_time_integration
 
 !DIR$ IVDEP
          do k=1,nVertLevels
-            rho_zz_new_inv = 1.0_RKIND / (weight_time_old*rho_zz_old(k,iCell) + weight_time_new*rho_zz_new(k,iCell))
+            rho_zz_new_inv = c1_0 / (weight_time_old*rho_zz_old(k,iCell) + weight_time_new*rho_zz_new(k,iCell))
 !DIR$ IVDEP
             do iScalar=1,num_scalars
                scalar_new(iScalar,k,iCell) = (   scalar_old(iScalar,k,iCell)*rho_zz_old(k,iCell) &
@@ -4183,20 +4190,20 @@ module atm_time_integration
 
                case default
                   do k=1,nVertLevels
-                     flux_arr(k,iEdge) = 0.0_RKIND
+                     flux_arr(k,iEdge) = 0.0
                   enddo
                   do i=1,nAdvCellsForEdge(iEdge)
                      iCell = advCellsForEdge(i,iEdge)
 !DIR$ IVDEP
                      do k=1,nVertLevels
-                        scalar_weight = uhAvg(k,iEdge)*(adv_coefs(i,iEdge) + sign(1.0_RKIND,uhAvg(k,iEdge))*adv_coefs_3rd(i,iEdge))
+                        scalar_weight = uhAvg(k,iEdge)*(adv_coefs(i,iEdge) + sign(1.0,uhAvg(k,iEdge))*adv_coefs_3rd(i,iEdge))
                         flux_arr(k,iEdge) = flux_arr(k,iEdge) + scalar_weight* scalar_new(k,iCell)
                      end do
                   end do
                end select
 
             else
-               flux_arr(:,iEdge) = 0.0_RKIND
+               flux_arr(:,iEdge) = 0.0
             end if
 
          end do
@@ -4215,7 +4222,7 @@ module atm_time_integration
 !DIR$ IVDEP
             do k = 2, nVertLevels
                scalar_new(k,iCell) = scalar_old(k,iCell)*rho_zz_old(k,iCell)
-               flux_upwind_arr(k) = dt*(max(0.0_RKIND,wwAvg(k,iCell))*scalar_old(k-1,iCell) + min(0.0_RKIND,wwAvg(k,iCell))*scalar_old(k,iCell))
+               flux_upwind_arr(k) = dt*(max(0.0,wwAvg(k,iCell))*scalar_old(k-1,iCell) + min(0.0,wwAvg(k,iCell))*scalar_old(k,iCell))
             end do
             do k = 1, nVertLevels-1
                scalar_new(k,iCell) = scalar_new(k,iCell) - flux_upwind_arr(k+1)*rdnw(k)
@@ -4234,8 +4241,8 @@ module atm_time_integration
 
 !DIR$ IVDEP
             do k=1,nVertLevels
-               scale_arr(k,SCALE_IN, iCell) = - rdnw(k)*(min(0.0_RKIND,wdtn(k+1,iCell))-max(0.0_RKIND,wdtn(k,iCell)))
-               scale_arr(k,SCALE_OUT,iCell) = - rdnw(k)*(max(0.0_RKIND,wdtn(k+1,iCell))-min(0.0_RKIND,wdtn(k,iCell)))
+               scale_arr(k,SCALE_IN, iCell) = - rdnw(k)*(min(0.0,wdtn(k+1,iCell))-max(0.0,wdtn(k,iCell)))
+               scale_arr(k,SCALE_OUT,iCell) = - rdnw(k)*(max(0.0,wdtn(k+1,iCell))-min(0.0,wdtn(k,iCell)))
             end do
 
          end do
@@ -4251,7 +4258,7 @@ module atm_time_integration
 !DIR$ IVDEP
             do k=1, nVertLevels
                flux_upwind_tmp(k,iEdge) = dvEdge(iEdge) * dt *   &
-                      (max(0.0_RKIND,uhAvg(k,iEdge))*scalar_old(k,cell1) + min(0.0_RKIND,uhAvg(k,iEdge))*scalar_old(k,cell2))
+                      (max(0.0,uhAvg(k,iEdge))*scalar_old(k,cell1) + min(0.0,uhAvg(k,iEdge))*scalar_old(k,cell2))
                flux_tmp(k,iEdge) = dt * flux_arr(k,iEdge) - flux_upwind_tmp(k,iEdge)
             end do
 
@@ -4271,9 +4278,9 @@ module atm_time_integration
                   scalar_new(k,iCell) = scalar_new(k,iCell) - edgesOnCell_sign(i,iCell) * flux_upwind_tmp(k,iEdge) * invAreaCell(iCell)
  
                   scale_arr(k,SCALE_OUT,iCell) = scale_arr(k,SCALE_OUT,iCell) &
-                                                 - max(0.0_RKIND,edgesOnCell_sign(i,iCell)*flux_tmp(k,iEdge)) * invAreaCell(iCell)
+                                                 - max(0.0,edgesOnCell_sign(i,iCell)*flux_tmp(k,iEdge)) * invAreaCell(iCell)
                   scale_arr(k,SCALE_IN, iCell) = scale_arr(k,SCALE_IN, iCell) &
-                                                 - min(0.0_RKIND,edgesOnCell_sign(i,iCell)*flux_tmp(k,iEdge)) * invAreaCell(iCell)
+                                                 - min(0.0,edgesOnCell_sign(i,iCell)*flux_tmp(k,iEdge)) * invAreaCell(iCell)
                end do
 
             end do
@@ -4293,11 +4300,11 @@ module atm_time_integration
 
                scale_factor = (s_max(k,iCell)*rho_zz_int(k,iCell) - scalar_new(k,iCell)) / &
                     (scale_arr(k,SCALE_IN,iCell)  + eps)
-               scale_arr(k,SCALE_IN,iCell) = min( 1.0_RKIND, max( 0.0_RKIND, scale_factor) )
+               scale_arr(k,SCALE_IN,iCell) = min( 1.0, max( 0.0, scale_factor) )
 
                scale_factor = (s_min(k,iCell)*rho_zz_int(k,iCell) - scalar_new(k,iCell)) / &
                     (scale_arr(k,SCALE_OUT,iCell) - eps)
-               scale_arr(k,SCALE_OUT,iCell) = min( 1.0_RKIND, max( 0.0_RKIND, scale_factor) )
+               scale_arr(k,SCALE_OUT,iCell) = min( 1.0, max( 0.0, scale_factor) )
             end do
          end do
       else
@@ -4307,11 +4314,11 @@ module atm_time_integration
 
                scale_factor = (s_max(k,iCell)*rho_zz_new(k,iCell) - scalar_new(k,iCell)) / &
                     (scale_arr(k,SCALE_IN,iCell)  + eps)
-               scale_arr(k,SCALE_IN,iCell) = min( 1.0_RKIND, max( 0.0_RKIND, scale_factor) )
+               scale_arr(k,SCALE_IN,iCell) = min( 1.0, max( 0.0, scale_factor) )
 
                scale_factor = (s_min(k,iCell)*rho_zz_new(k,iCell) - scalar_new(k,iCell)) / &
                     (scale_arr(k,SCALE_OUT,iCell) - eps)
-               scale_arr(k,SCALE_OUT,iCell) = min( 1.0_RKIND, max( 0.0_RKIND, scale_factor) )
+               scale_arr(k,SCALE_OUT,iCell) = min( 1.0, max( 0.0, scale_factor) )
             end do
          end do
       end if
@@ -4354,7 +4361,7 @@ module atm_time_integration
 !DIR$ IVDEP
                do k=1, nVertLevels
                   flux_upwind = dvEdge(iEdge) * dt *   &
-                         (max(0.0_RKIND,uhAvg(k,iEdge))*scalar_old(k,cell1) + min(0.0_RKIND,uhAvg(k,iEdge))*scalar_old(k,cell2))
+                         (max(0.0,uhAvg(k,iEdge))*scalar_old(k,cell1) + min(0.0,uhAvg(k,iEdge))*scalar_old(k,cell2))
                   flux_arr(k,iEdge) = dt*flux_arr(k,iEdge) - flux_upwind
                end do
 
@@ -4378,8 +4385,8 @@ module atm_time_integration
 !DIR$ IVDEP
                do k = 1, nVertLevels
                   flux = flux_arr(k,iEdge)
-                  flux = max(0.0_RKIND,flux) * min(scale_arr(k,SCALE_OUT,cell1), scale_arr(k,SCALE_IN, cell2)) &
-                       + min(0.0_RKIND,flux) * min(scale_arr(k,SCALE_IN, cell1), scale_arr(k,SCALE_OUT,cell2))
+                  flux = max(0.0,flux) * min(scale_arr(k,SCALE_OUT,cell1), scale_arr(k,SCALE_IN, cell2)) &
+                       + min(0.0,flux) * min(scale_arr(k,SCALE_IN, cell1), scale_arr(k,SCALE_OUT,cell2))
                   flux_arr(k,iEdge) = flux
                end do
             end if
@@ -4394,8 +4401,8 @@ module atm_time_integration
 !DIR$ IVDEP
             do k = 2, nVertLevels
                flux = wdtn(k,iCell)
-               flux = max(0.0_RKIND,flux) * min(scale_arr(k-1,SCALE_OUT,iCell), scale_arr(k  ,SCALE_IN,iCell)) &
-                    + min(0.0_RKIND,flux) * min(scale_arr(k  ,SCALE_OUT,iCell), scale_arr(k-1,SCALE_IN,iCell))
+               flux = max(0.0,flux) * min(scale_arr(k-1,SCALE_OUT,iCell), scale_arr(k  ,SCALE_IN,iCell)) &
+                    + min(0.0,flux) * min(scale_arr(k  ,SCALE_OUT,iCell), scale_arr(k-1,SCALE_IN,iCell))
                wdtn(k,iCell) = flux
             end do
          end do
@@ -4452,7 +4459,7 @@ module atm_time_integration
          do iCell=cellStart,cellEnd
             if(bdyMaskCell(iCell) <= nSpecZone) then ! regional_MPAS does spec zone update after transport.
                do k=1, nVertLevels
-                  scalars_new(iScalar,k,iCell) = max(0.0_RKIND,scalar_new(k,iCell))
+                  scalars_new(iScalar,k,iCell) = max(0.0,scalar_new(k,iCell))
                end do
             end if
          end do
@@ -4697,7 +4704,7 @@ module atm_time_integration
       inactive_rthdynten = .false.
       if (.not. associated(rthdynten)) then
          allocate(rthdynten(nVertLevels,nCells+1))
-         rthdynten(:,nCells+1) = 0.0_RKIND
+         rthdynten(:,nCells+1) = 0.0
          inactive_rthdynten = .true.
       end if
 
@@ -4898,15 +4905,16 @@ module atm_time_integration
       real (kind=RKIND) :: kdiffu, z1, z2, z3, z4, zm, z0, zp, rayleigh_coef_inverse
 
       real (kind=RKIND), dimension( nVertLevels ) :: rayleigh_damp_coef
+      real (kind=RKIND), parameter :: c1_0 = 1.0, c0_01 = 0.01, c2_0833 = 2.0833, c2_0 = 2.0, c4_0 = 4.0, c0_5 = 0.5, c0_25 = 0.25
 #ifdef GPTL
    integer :: gptl_ret, gptl_handle = 0
 #endif
 #ifdef GPTL
    gptl_ret = gptlstart_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
 #endif
-      prandtl_inv = 1.0_RKIND / prandtl
-      invDt = 1.0_RKIND / dt
-      inv_r_earth = 1.0_RKIND / r_earth
+      prandtl_inv = c1_0 / prandtl
+      invDt = c1_0 / dt
+      inv_r_earth = c1_0 / r_earth
 
        v_mom_eddy_visc2   = config_v_mom_eddy_visc2
        v_theta_eddy_visc2 = config_v_theta_eddy_visc2
@@ -4934,7 +4942,7 @@ module atm_time_integration
                do k=1, nVertLevels
                   ! here is the Smagorinsky formulation, 
                   ! followed by imposition of an upper bound on the eddy viscosity
-                  kdiff(k,iCell) = min((c_s * config_len_disp)**2 * sqrt(d_diag(k)**2 + d_off_diag(k)**2),(0.01*config_len_disp**2) * invDt)
+                  kdiff(k,iCell) = min((c_s * config_len_disp)**2 * sqrt(d_diag(k)**2 + d_off_diag(k)**2),(c0_01*config_len_disp**2) * invDt)
                end do
             end do
 
@@ -4956,9 +4964,9 @@ module atm_time_integration
                ! 2nd-order filter for top absorbing layer as in CAM-SE :  WCS 10 May 2017
                ! From MPAS-CAM V4.0 code, with addition to config-specified coefficient (V4.0_coef = 0.2; SE_coef = 1.0)
                !
-               kdiff(nVertLevels-2,iCell) = max(kdiff(nVertLevels-2,iCell),    2.0833*config_len_disp*config_mpas_cam_coef)
-               kdiff(nVertLevels-1,iCell) = max(kdiff(nVertLevels-1,iCell),2.0*2.0833*config_len_disp*config_mpas_cam_coef)
-               kdiff(nVertLevels  ,iCell) = max(kdiff(nVertLevels  ,iCell),4.0*2.0833*config_len_disp*config_mpas_cam_coef)
+               kdiff(nVertLevels-2,iCell) = max(kdiff(nVertLevels-2,iCell),    c2_0833*config_len_disp*config_mpas_cam_coef)
+               kdiff(nVertLevels-1,iCell) = max(kdiff(nVertLevels-1,iCell),c2_0*c2_0833*config_len_disp*config_mpas_cam_coef)
+               kdiff(nVertLevels  ,iCell) = max(kdiff(nVertLevels  ,iCell),c4_0*c2_0833*config_len_disp*config_mpas_cam_coef)
             end do
 
          end if
@@ -5004,7 +5012,7 @@ module atm_time_integration
 !DIR$ IVDEP
           do k = 1,nVertLevels
             tend_rho(k,iCell) = -h_divergence(k,iCell)-rdzw(k)*(rw(k+1,iCell)-rw(k,iCell)) + tend_rho_physics(k,iCell)
-            dpdz(k,iCell) = -gravity*(rb(k,iCell)*(qtot(k,iCell)) + rr_save(k,iCell)*(1.+qtot(k,iCell)))
+            dpdz(k,iCell) = -gravity*(rb(k,iCell)*(qtot(k,iCell)) + rr_save(k,iCell)*(c1_0+qtot(k,iCell)))
           end do
         end do
       end if
@@ -5025,8 +5033,8 @@ module atm_time_integration
          if(rk_step == 1) then
 !DIR$ IVDEP
             do k=1,nVertLevels
-               tend_u_euler(k,iEdge) =  - cqu(k,iEdge)*( (pp(k,cell2)-pp(k,cell1))*invDcEdge(iEdge)/(.5*(zz(k,cell2)+zz(k,cell1))) &
-                                              -0.5*zxu(k,iEdge)*(dpdz(k,cell1)+dpdz(k,cell2)) )
+               tend_u_euler(k,iEdge) =  - cqu(k,iEdge)*( (pp(k,cell2)-pp(k,cell1))*invDcEdge(iEdge)/(c0_5*(zz(k,cell2)+zz(k,cell1))) &
+                                              -c0_5*zxu(k,iEdge)*(dpdz(k,cell1)+dpdz(k,cell2)) )
             end do
 
          end if
@@ -5036,18 +5044,18 @@ module atm_time_integration
          wduz(1) = 0.
 
          k = 2
-         wduz(k) =  0.5*( rw(k,cell1)+rw(k,cell2))*(fzm(k)*u(k,iEdge)+fzp(k)*u(k-1,iEdge))
+         wduz(k) =  c0_5*( rw(k,cell1)+rw(k,cell2))*(fzm(k)*u(k,iEdge)+fzp(k)*u(k-1,iEdge))
 #ifdef GPTL
    gptl_ret = gptlstop_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
 #endif
          do k=3,nVertLevels-1
-            wduz(k) = flux3( u(k-2,iEdge),u(k-1,iEdge),u(k,iEdge),u(k+1,iEdge),0.5*(rw(k,cell1)+rw(k,cell2)), 1.0_RKIND )
+            wduz(k) = flux3( u(k-2,iEdge),u(k-1,iEdge),u(k,iEdge),u(k+1,iEdge),c0_5*(rw(k,cell1)+rw(k,cell2)), c1_0 )
          end do
 #ifdef GPTL
    gptl_ret = gptlstart_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
 #endif
          k = nVertLevels
-         wduz(k) =  0.5*( rw(k,cell1)+rw(k,cell2))*(fzm(k)*u(k,iEdge)+fzp(k)*u(k-1,iEdge))
+         wduz(k) =  c0_5*( rw(k,cell1)+rw(k,cell2))*(fzm(k)*u(k,iEdge)+fzp(k)*u(k-1,iEdge))
 
          wduz(nVertLevels+1) = 0.
 
@@ -5062,7 +5070,7 @@ module atm_time_integration
          do j = 1,nEdgesOnEdge(iEdge)
             eoe = edgesOnEdge(j,iEdge)
             do k=1,nVertLevels
-               workpv = 0.5 * (pv_edge(k,iEdge) + pv_edge(k,eoe))
+               workpv = c0_5 * (pv_edge(k,iEdge) + pv_edge(k,eoe))
 !  the original definition of pv_edge had a factor of 1/density.  We have removed that factor
 !  given that it was not integral to any conservation property of the system
                q(k) = q(k) + weightsOnEdge(j,iEdge) * u(k,eoe) * workpv
@@ -5076,13 +5084,13 @@ module atm_time_integration
             ! of the horizontal momentum equation
             tend_u(k,iEdge) = tend_u(k,iEdge) + rho_edge(k,iEdge)* (q(k) - (ke(k,cell2) - ke(k,cell1))       &
                                                                  * invDcEdge(iEdge))                            &
-                                             - u(k,iEdge)*0.5*(h_divergence(k,cell1)+h_divergence(k,cell2)) 
+                                             - u(k,iEdge)*c0_5*(h_divergence(k,cell1)+h_divergence(k,cell2)) 
 #ifdef CURVATURE
             ! curvature terms for the sphere
             tend_u(k,iEdge) = tend_u(k,iEdge) &
-                             - 2.*omega*cos(angleEdge(iEdge))*cos(latEdge(iEdge))  &
-                               *rho_edge(k,iEdge)*.25*(w(k,cell1)+w(k+1,cell1)+w(k,cell2)+w(k+1,cell2))          & 
-                             - u(k,iEdge)*.25*(w(k+1,cell1)+w(k,cell1)+w(k,cell2)+w(k+1,cell2))                  &
+                             - c2_0*omega*cos(angleEdge(iEdge))*cos(latEdge(iEdge))  &
+                               *rho_edge(k,iEdge)*c0_25*(w(k,cell1)+w(k+1,cell1)+w(k,cell2)+w(k+1,cell2))          & 
+                             - u(k,iEdge)*c0_25*(w(k+1,cell1)+w(k,cell1)+w(k,cell2)+w(k+1,cell2))                  &
                                *rho_edge(k,iEdge) * inv_r_earth
 #endif
          end do
@@ -5123,7 +5131,7 @@ module atm_time_integration
 
                delsq_u(k,iEdge) = delsq_u(k,iEdge) + u_diffusion
 
-               kdiffu = 0.5*(kdiff(k,cell1)+kdiff(k,cell2))
+               kdiffu = c0_5*(kdiff(k,cell1)+kdiff(k,cell2))
 
                ! include 2nd-orer diffusion here 
                tend_u_euler(k,iEdge) = tend_u_euler(k,iEdge) &
@@ -5207,18 +5215,18 @@ module atm_time_integration
 
                   do k=2,nVertLevels-1
 
-                     z1 = 0.5*(zgrid(k-1,cell1)+zgrid(k-1,cell2))
-                     z2 = 0.5*(zgrid(k  ,cell1)+zgrid(k  ,cell2))
-                     z3 = 0.5*(zgrid(k+1,cell1)+zgrid(k+1,cell2))
-                     z4 = 0.5*(zgrid(k+2,cell1)+zgrid(k+2,cell2))
+                     z1 = c0_5*(zgrid(k-1,cell1)+zgrid(k-1,cell2))
+                     z2 = c0_5*(zgrid(k  ,cell1)+zgrid(k  ,cell2))
+                     z3 = c0_5*(zgrid(k+1,cell1)+zgrid(k+1,cell2))
+                     z4 = c0_5*(zgrid(k+2,cell1)+zgrid(k+2,cell2))
 
-                     zm = 0.5*(z1+z2)
-                     z0 = 0.5*(z2+z3)
-                     zp = 0.5*(z3+z4)
+                     zm = c0_5*(z1+z2)
+                     z0 = c0_5*(z2+z3)
+                     zp = c0_5*(z3+z4)
 
                      tend_u_euler(k,iEdge) = tend_u_euler(k,iEdge) + rho_edge(k,iEdge) * v_mom_eddy_visc2*(  &
                                         (u(k+1,iEdge)-u(k  ,iEdge))/(zp-z0)                      &
-                                       -(u(k  ,iEdge)-u(k-1,iEdge))/(z0-zm) )/(0.5*(zp-zm))
+                                       -(u(k  ,iEdge)-u(k-1,iEdge))/(z0-zm) )/(c0_5*(zp-zm))
                   end do
                end do
 
@@ -5236,18 +5244,18 @@ module atm_time_integration
 
                   do k=2,nVertLevels-1
 
-                     z1 = 0.5*(zgrid(k-1,cell1)+zgrid(k-1,cell2))
-                     z2 = 0.5*(zgrid(k  ,cell1)+zgrid(k  ,cell2))
-                     z3 = 0.5*(zgrid(k+1,cell1)+zgrid(k+1,cell2))
-                     z4 = 0.5*(zgrid(k+2,cell1)+zgrid(k+2,cell2))
+                     z1 = c0_5*(zgrid(k-1,cell1)+zgrid(k-1,cell2))
+                     z2 = c0_5*(zgrid(k  ,cell1)+zgrid(k  ,cell2))
+                     z3 = c0_5*(zgrid(k+1,cell1)+zgrid(k+1,cell2))
+                     z4 = c0_5*(zgrid(k+2,cell1)+zgrid(k+2,cell2))
 
-                     zm = 0.5*(z1+z2)
-                     z0 = 0.5*(z2+z3)
-                     zp = 0.5*(z3+z4)
+                     zm = c0_5*(z1+z2)
+                     z0 = c0_5*(z2+z3)
+                     zp = c0_5*(z3+z4)
 
                      tend_u_euler(k,iEdge) = tend_u_euler(k,iEdge) + rho_edge(k,iEdge) * v_mom_eddy_visc2*(  &
                                         (u_mix(k+1)-u_mix(k  ))/(zp-z0)                      &
-                                       -(u_mix(k  )-u_mix(k-1))/(z0-zm) )/(0.5*(zp-zm))
+                                       -(u_mix(k  )-u_mix(k-1))/(z0-zm) )/(c0_5*(zp-zm))
                   end do
                end do
 
@@ -5263,7 +5271,7 @@ module atm_time_integration
 
 !  Rayleigh damping on u
       if (config_rayleigh_damp_u) then
-         rayleigh_coef_inverse = 1.0 / ( real(config_number_rayleigh_damp_u_levels) &
+         rayleigh_coef_inverse = c1_0 / ( real(config_number_rayleigh_damp_u_levels) &
                                          * (config_rayleigh_damp_u_timescale_days*seconds_per_day) )
          do k=nVertLevels-config_number_rayleigh_damp_u_levels+1,nVertLevels
             rayleigh_damp_coef(k) = real(k - (nVertLevels-config_number_rayleigh_damp_u_levels))*rayleigh_coef_inverse
@@ -5297,7 +5305,7 @@ module atm_time_integration
          tend_w(1:nVertLevels+1,iCell) = 0.0
          do i=1,nEdgesOnCell(iCell)
             iEdge = edgesOnCell(i,iCell)
-            edge_sign = edgesOnCell_sign(i,iCell) * dvEdge(iEdge) * 0.5
+            edge_sign = edgesOnCell_sign(i,iCell) * dvEdge(iEdge) * c0_5
 
             do k=2,nVertLevels
                ru_edge_w(k) = fzm(k)*ru(k,iEdge) + fzp(k)*ru(k-1,iEdge)
@@ -5310,7 +5318,7 @@ module atm_time_integration
             do j=1,nAdvCellsForEdge(iEdge)
                iAdvCell = advCellsForEdge(j,iEdge)
                do k=2,nVertLevels
-                  scalar_weight = adv_coefs(j,iEdge) + sign(1.0_RKIND,ru_edge_w(k)) * adv_coefs_3rd(j,iEdge)
+                  scalar_weight = adv_coefs(j,iEdge) + sign(1.0,ru_edge_w(k)) * adv_coefs_3rd(j,iEdge)
                   flux_arr(k) = flux_arr(k) + scalar_weight * w(k,iAdvCell)
                end do
             end do
@@ -5330,7 +5338,7 @@ module atm_time_integration
             tend_w(k,iCell) = tend_w(k,iCell) + (rho_zz(k,iCell)*fzm(k)+rho_zz(k-1,iCell)*fzp(k))*          &
                                       ( (fzm(k)*ur_cell(k,iCell)+fzp(k)*ur_cell(k-1,iCell))**2.             &
                                        +(fzm(k)*vr_cell(k,iCell)+fzp(k)*vr_cell(k-1,iCell))**2. )/r_earth   &
-                                + 2.*omega*cos(latCell(iCell))                                              &
+                                + c2_0*omega*cos(latCell(iCell))                                              &
                                        *(fzm(k)*ur_cell(k,iCell)+fzp(k)*ur_cell(k-1,iCell))                 &
                                        *(rho_zz(k,iCell)*fzm(k)+rho_zz(k-1,iCell)*fzp(k))
 
@@ -5362,7 +5370,7 @@ module atm_time_integration
             do i=1,nEdgesOnCell(iCell)
                iEdge = edgesOnCell(i,iCell)
 
-               edge_sign = 0.5 * r_areaCell*edgesOnCell_sign(i,iCell) * dvEdge(iEdge) * invDcEdge(iEdge)
+               edge_sign = c0_5 * r_areaCell*edgesOnCell_sign(i,iCell) * dvEdge(iEdge) * invDcEdge(iEdge)
 
                cell1 = cellsOnEdge(1,iEdge)
                cell2 = cellsOnEdge(2,iEdge)
@@ -5372,7 +5380,7 @@ module atm_time_integration
 
                   w_turb_flux =  edge_sign*(rho_edge(k,iEdge)+rho_edge(k-1,iEdge))*(w(k,cell2) - w(k,cell1))
                   delsq_w(k,iCell) = delsq_w(k,iCell) + w_turb_flux
-                  w_turb_flux = w_turb_flux * meshScalingDel2(iEdge) * 0.25 * &
+                  w_turb_flux = w_turb_flux * meshScalingDel2(iEdge) * c0_25 * &
                                   (kdiff(k,cell1)+kdiff(k,cell2)+kdiff(k-1,cell1)+kdiff(k-1,cell2))
                   tend_w_euler(k,iCell) = tend_w_euler(k,iCell) + w_turb_flux
                end do
@@ -5419,18 +5427,18 @@ module atm_time_integration
          wdwz(1) = 0.0
 
          k = 2
-         wdwz(k) =  0.25*(rw(k,icell)+rw(k-1,iCell))*(w(k,iCell)+w(k-1,iCell))
+         wdwz(k) =  c0_25*(rw(k,icell)+rw(k-1,iCell))*(w(k,iCell)+w(k-1,iCell))
 #ifdef GPTL
    gptl_ret = gptlstop_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
 #endif
          do k=3,nVertLevels-1
-            wdwz(k) = flux3( w(k-2,iCell),w(k-1,iCell),w(k,iCell),w(k+1,iCell),0.5*(rw(k,iCell)+rw(k-1,iCell)), 1.0_RKIND )
+            wdwz(k) = flux3( w(k-2,iCell),w(k-1,iCell),w(k,iCell),w(k+1,iCell),c0_5*(rw(k,iCell)+rw(k-1,iCell)), c1_0 )
          end do
 #ifdef GPTL
    gptl_ret = gptlstart_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
 #endif
          k = nVertLevels
-         wdwz(k) =  0.25*(rw(k,icell)+rw(k-1,iCell))*(w(k,iCell)+w(k-1,iCell))
+         wdwz(k) =  c0_25*(rw(k,icell)+rw(k-1,iCell))*(w(k,iCell)+w(k-1,iCell))
 
          wdwz(nVertLevels+1) = 0.0
 
@@ -5459,7 +5467,7 @@ module atm_time_integration
             do iCell=cellSolveStart,cellSolveEnd
 !DIR$ IVDEP
                do k=2,nVertLevels
-                  tend_w_euler(k,iCell) = tend_w_euler(k,iCell) + v_mom_eddy_visc2*0.5*(rho_zz(k,iCell)+rho_zz(k-1,iCell))*(  &
+                  tend_w_euler(k,iCell) = tend_w_euler(k,iCell) + v_mom_eddy_visc2*c0_5*(rho_zz(k,iCell)+rho_zz(k-1,iCell))*(  &
                                            (w(k+1,iCell)-w(k  ,iCell))*rdzw(k)                              &
                                           -(w(k  ,iCell)-w(k-1,iCell))*rdzw(k-1) )*rdzu(k)
                end do
@@ -5494,7 +5502,7 @@ module atm_time_integration
             do j=1,nAdvCellsForEdge(iEdge)
                iAdvCell = advCellsForEdge(j,iEdge)
                do k=1,nVertLevels
-                  scalar_weight = adv_coefs(j,iEdge) + sign(1.0_RKIND,ru(k,iEdge))*adv_coefs_3rd(j,iEdge)
+                  scalar_weight = adv_coefs(j,iEdge) + sign(1.0,ru(k,iEdge))*adv_coefs_3rd(j,iEdge)
                   flux_arr(k) = flux_arr(k) + scalar_weight* theta_m(k,iAdvCell)
                end do
             end do
@@ -5517,7 +5525,7 @@ module atm_time_integration
             cell2 = cellsOnEdge(2,iEdge)
 !DIR$ IVDEP
             do k=1,nVertLevels
-               flux = edgesOnCell_sign(i,iCell)*dvEdge(iEdge)*(ru_save(k,iEdge)-ru(k,iEdge))*0.5*(theta_m_save(k,cell2)+theta_m_save(k,cell1))
+               flux = edgesOnCell_sign(i,iCell)*dvEdge(iEdge)*(ru_save(k,iEdge)-ru(k,iEdge))*c0_5*(theta_m_save(k,cell2)+theta_m_save(k,cell1))
                tend_theta(k,iCell) = tend_theta(k,iCell)-flux  ! division by areaCell picked up down below
             end do
           end do
@@ -5549,7 +5557,7 @@ module atm_time_integration
 
                   theta_turb_flux = edge_sign*(theta_m(k,cell2) - theta_m(k,cell1))*rho_edge(k,iEdge)
                   delsq_theta(k,iCell) = delsq_theta(k,iCell) + theta_turb_flux
-                  theta_turb_flux = theta_turb_flux*0.5*(kdiff(k,cell1)+kdiff(k,cell2)) * pr_scale
+                  theta_turb_flux = theta_turb_flux*c0_5*(kdiff(k,cell1)+kdiff(k,cell2)) * pr_scale
                   tend_theta_euler(k,iCell) = tend_theta_euler(k,iCell) + theta_turb_flux
 
                end do
@@ -5632,13 +5640,13 @@ module atm_time_integration
                      z3 = zgrid(k+1,iCell)
                      z4 = zgrid(k+2,iCell)
 
-                     zm = 0.5*(z1+z2)
-                     z0 = 0.5*(z2+z3)
-                     zp = 0.5*(z3+z4)
+                     zm = c0_5*(z1+z2)
+                     z0 = c0_5*(z2+z3)
+                     zp = c0_5*(z3+z4)
 
                      tend_theta_euler(k,iCell) = tend_theta_euler(k,iCell) + v_theta_eddy_visc2*prandtl_inv*rho_zz(k,iCell)*(&
                                               (theta_m(k+1,iCell)-theta_m(k  ,iCell))/(zp-z0)                 &
-                                             -(theta_m(k  ,iCell)-theta_m(k-1,iCell))/(z0-zm) )/(0.5*(zp-zm))
+                                             -(theta_m(k  ,iCell)-theta_m(k-1,iCell))/(z0-zm) )/(c0_5*(zp-zm))
                   end do
                end do
 
@@ -5651,13 +5659,13 @@ module atm_time_integration
                      z3 = zgrid(k+1,iCell)
                      z4 = zgrid(k+2,iCell)
 
-                     zm = 0.5*(z1+z2)
-                     z0 = 0.5*(z2+z3)
-                     zp = 0.5*(z3+z4)
+                     zm = c0_5*(z1+z2)
+                     z0 = c0_5*(z2+z3)
+                     zp = c0_5*(z3+z4)
 
                      tend_theta_euler(k,iCell) = tend_theta_euler(k,iCell) + v_theta_eddy_visc2*prandtl_inv*rho_zz(k,iCell)*(&
                                               ((theta_m(k+1,iCell)-t_init(k+1,iCell))-(theta_m(k  ,iCell)-t_init(k,iCell)))/(zp-z0)      &
-                                             -((theta_m(k  ,iCell)-t_init(k,iCell))-(theta_m(k-1,iCell)-t_init(k-1,iCell)))/(z0-zm) )/(0.5*(zp-zm))
+                                             -((theta_m(k  ,iCell)-t_init(k,iCell))-(theta_m(k-1,iCell)-t_init(k-1,iCell)))/(z0-zm) )/(c0_5*(zp-zm))
                   end do
                end do
 
@@ -5841,6 +5849,7 @@ module atm_time_integration
       logical, parameter :: hollingsworth=.true.
       real (kind=RKIND) :: ke_fact, efac
       logical :: reconstruct_v
+      real (kind=RKIND), parameter :: c0_5=0.5, c0_25 = 0.25, c1_0 = 1.0
 #ifdef GPTL
    integer :: gptl_ret, gptl_handle = 0
 #endif
@@ -5856,7 +5865,7 @@ module atm_time_integration
          cell2 = cellsOnEdge(2,iEdge)
 !DIR$ IVDEP
          do k=1,nVertLevels
-            h_edge(k,iEdge) = 0.5 * (h(k,cell1) + h(k,cell2))
+            h_edge(k,iEdge) = c0_5 * (h(k,cell1) + h(k,cell2))
          end do
 
 !  the first openmp barrier below is set so that ke_edge is computed
@@ -5922,7 +5931,7 @@ module atm_time_integration
             iEdge = edgesOnCell(i,iCell)
             do k=1,nVertLevels
 !               ke(k,iCell) = ke(k,iCell) + 0.25 * dcEdge(iEdge) * dvEdge(iEdge) * u(k,iEdge)**2
-               ke(k,iCell) = ke(k,iCell) + 0.25 * ke_edge(k,iEdge)
+               ke(k,iCell) = ke(k,iCell) + c0_25 * ke_edge(k,iEdge)
             end do
          end do
 !DIR$ IVDEP
@@ -5941,7 +5950,7 @@ module atm_time_integration
          ! Replace 2.0 with 2 in exponentiation to avoid outside chance that
          ! compiler will actually allow "float raised to float" operation
          do iVertex=vertexStart,vertexEnd
-            r = 0.25 * invAreaTriangle(iVertex) 
+            r = c0_25 * invAreaTriangle(iVertex) 
             do k=1,nVertLevels
 
 !               ke_vertex(k,iVertex) = (  dcEdge(EdgesOnVertex(1,iVertex))*dvEdge(EdgesOnVertex(1,iVertex))*u(k,EdgesOnVertex(1,iVertex))**2  &
@@ -5975,7 +5984,7 @@ module atm_time_integration
                j = kiteForCell(i,iCell)
 !DIR$ IVDEP
                do k = 1,nVertLevels
-                  ke(k,iCell) = ke(k,iCell) + (1.-ke_fact)*kiteAreasOnVertex(j,iVertex) * ke_vertex(k,iVertex) * r
+                  ke(k,iCell) = ke(k,iCell) + (c1_0-ke_fact)*kiteAreasOnVertex(j,iVertex) * ke_vertex(k,iVertex) * r
                end do
             end do
          end do
@@ -6033,7 +6042,7 @@ module atm_time_integration
       do iEdge = edgeStart,edgeEnd
 !DIR$ IVDEP
          do k=1,nVertLevels
-            pv_edge(k,iEdge) =  0.5 * (pv_vertex(k,verticesOnEdge(1,iEdge)) + pv_vertex(k,verticesOnEdge(2,iEdge)))
+            pv_edge(k,iEdge) =  c0_5 * (pv_vertex(k,verticesOnEdge(1,iEdge)) + pv_vertex(k,verticesOnEdge(2,iEdge)))
          end do
       end do
 
@@ -6076,8 +6085,8 @@ module atm_time_integration
          !
          r = config_apvm_upwinding * dt
          do iEdge = edgeStart,edgeEnd
-            r1 = 1.0_RKIND * invDvEdge(iEdge)
-            r2 = 1.0_RKIND * invDcEdge(iEdge)
+            r1 = c1_0 * invDvEdge(iEdge)
+            r2 = c1_0 * invDcEdge(iEdge)
 !DIR$ IVDEP
             do k = 1,nVertLevels
                gradPVt(k,iEdge) = (pv_vertex(k,verticesOnEdge(2,iEdge)) - pv_vertex(k,verticesOnEdge(1,iEdge))) * r1
@@ -6135,6 +6144,7 @@ module atm_time_integration
       real (kind=RKIND), dimension(:,:), pointer :: exner_base
       real (kind=RKIND), dimension(:), pointer :: fzm, fzp
       real (kind=RKIND), dimension(:,:,:), pointer :: zb, zb3, zb_cell, zb3_cell
+      real (kind=RKIND), parameter :: c0_5 = 0.5, c1_0 = 1.0
 #ifdef GPTL
    integer :: gptl_ret, gptl_handle = 0
 #endif
@@ -6184,7 +6194,7 @@ module atm_time_integration
 
       do iCell=cellStart,cellEnd
          do k=1,nVertLevels
-            theta_m(k,iCell) = theta(k,iCell) * (1._RKIND + rvord * scalars(index_qv,k,iCell))
+            theta_m(k,iCell) = theta(k,iCell) * (c1_0 + rvord * scalars(index_qv,k,iCell))
             rho_zz(k,iCell) = rho(k,iCell) / zz(k,iCell)
          end do
       end do
@@ -6195,7 +6205,7 @@ module atm_time_integration
          cell1 = cellsOnEdge(1,iEdge)
          cell2 = cellsOnEdge(2,iEdge)
          do k=1,nVertLevels
-            ru(k,iEdge) = 0.5 * u(k,iEdge) * (rho_zz(k,cell1) + rho_zz(k,cell2))
+            ru(k,iEdge) = c0_5 * u(k,iEdge) * (rho_zz(k,cell1) + rho_zz(k,cell2))
          end do
       end do
 
@@ -6221,7 +6231,7 @@ module atm_time_integration
             do k = 2,nVertLevels
             flux = (fzm(k)*ru(k,iEdge) + fzp(k)*ru(k-1,iEdge))
             rw(k,iCell) = rw(k,iCell)   &
-                          - edgesOnCell_sign(i,iCell) * (zb_cell(k,i,iCell) + sign(1.0_RKIND,flux) * zb3_cell(k,i,iCell))*flux   &
+                          - edgesOnCell_sign(i,iCell) * (zb_cell(k,i,iCell) + sign(1.0,flux) * zb3_cell(k,i,iCell))*flux   &
                           * (fzp(k) * zz(k-1,iCell) + fzm(k) * zz(k,iCell))
             end do
          end do
@@ -6331,7 +6341,7 @@ module atm_time_integration
    gptl_ret = gptlstart_handle("::atm_time_integration::atm_rk_dynamics_substep_finish", gptl_handle)
 #endif
 
-      inv_dynamics_split = 1.0_RKIND / real(dynamics_split)
+      inv_dynamics_split = 1.0 / real(dynamics_split)
       
       if (dynamics_substep < dynamics_split) then
 
@@ -6539,6 +6549,7 @@ module atm_time_integration
       integer :: vertex1, vertex2, iVertex
 
       real (kind=RKIND), dimension(:), pointer :: meshScalingRegionalCell, meshScalingRegionalEdge
+      real(kind=RKIND), parameter :: c1_0 = 1.0, c50_0 = 50.0, c10_0 = 10.0
 #ifdef GPTL
    integer :: gptl_ret, gptl_handle = 0
 #endif
@@ -6578,7 +6589,7 @@ module atm_time_integration
 
       do iCell = cellSolveStart, cellSolveEnd
          if( (bdyMaskCell(iCell) > 1) .and. (bdyMaskCell(iCell) <= nRelaxZone) ) then
-            rayleigh_damping_coef = (real(bdyMaskCell(iCell)) - 1.)/real(nRelaxZone)/(50.*dt*meshScalingRegionalCell(iCell))
+            rayleigh_damping_coef = (real(bdyMaskCell(iCell)) - c1_0)/real(nRelaxZone)/(c50_0*dt*meshScalingRegionalCell(iCell))
             do k=1, nVertLevels
                tend_rho(k,iCell) = tend_rho(k,iCell) - rayleigh_damping_coef * (rho_zz(k,iCell) - rho_driving_values(k,iCell))
                tend_rt(k,iCell)  = tend_rt(k,iCell)  - rayleigh_damping_coef * (rho_zz(k,iCell)*theta_m(k,iCell) - rt_driving_values(k,iCell))
@@ -6588,7 +6599,7 @@ module atm_time_integration
 
       do iEdge = edgeStart, edgeEnd
          if( (bdyMaskEdge(iEdge) > 1) .and. (bdyMaskEdge(iEdge) <= nRelaxZone) ) then
-            rayleigh_damping_coef = (real(bdyMaskEdge(iEdge)) - 1.)/real(nRelaxZone)/(50.*dt*meshScalingRegionalEdge(iEdge))
+            rayleigh_damping_coef = (real(bdyMaskEdge(iEdge)) - c1_0)/real(nRelaxZone)/(c50_0*dt*meshScalingRegionalEdge(iEdge))
             do k=1, nVertLevels
                tend_ru(k,iEdge) = tend_ru(k,iEdge) - rayleigh_damping_coef * (ru(k,iEdge) - ru_driving_values(k,iEdge))
             end do
@@ -6601,7 +6612,7 @@ module atm_time_integration
 
          if ( (bdyMaskCell(iCell) > 1) .and. (bdyMaskCell(iCell) <= nRelaxZone) ) then ! relaxation zone
 
-            laplacian_filter_coef = (real(bdyMaskCell(iCell)) - 1.)/real(nRelaxZone)/(10.*dt*meshScalingRegionalCell(iCell))
+            laplacian_filter_coef = (real(bdyMaskCell(iCell)) - c1_0)/real(nRelaxZone)/(c10_0*dt*meshScalingRegionalCell(iCell))
             !
             do i=1,nEdgesOnCell(iCell)
                iEdge = edgesOnCell(i,iCell)
@@ -6629,8 +6640,8 @@ module atm_time_integration
 
          if ( (bdyMaskEdge(iEdge) > 1) .and. (bdyMaskEdge(iEdge) <= nRelaxZone) ) then ! relaxation zone
 
-            laplacian_filter_coef = dcEdge(iEdge)**2 * (real(bdyMaskEdge(iEdge)) - 1.)/   &
-                                                real(nRelaxZone)/(10.*dt*meshScalingRegionalEdge(iEdge))
+            laplacian_filter_coef = dcEdge(iEdge)**2 * (real(bdyMaskEdge(iEdge)) - c1_0)/   &
+                                                real(nRelaxZone)/(c10_0*dt*meshScalingRegionalEdge(iEdge))
 
             cell1 = cellsOnEdge(1,iEdge)
             cell2 = cellsOnEdge(2,iEdge)
@@ -6829,6 +6840,7 @@ module atm_time_integration
       real (kind=RKIND), dimension(1:num_scalars,1:nVertLevels, cellSolveStart:cellSolveEnd) :: scalars_tmp
       real (kind=RKIND) :: edge_sign, laplacian_filter_coef, rayleigh_damping_coef, filter_flux
       integer :: iCell, iEdge, iScalar, i, k, cell1, cell2
+      real (kind=RKIND), parameter :: c1_0 = 1.0, c10_0 = 10.0, c5_0 = 5.0
 #ifdef GPTL
    integer :: gptl_ret, gptl_handle = 0
 #endif
@@ -6841,8 +6853,8 @@ module atm_time_integration
 
          if ( (bdyMaskCell(iCell) > 1) .and. (bdyMaskCell(iCell) <= nRelaxZone) ) then ! relaxation zone
 
-            laplacian_filter_coef = dt_rk*(real(bdyMaskCell(iCell)) - 1.)/real(nRelaxZone)/(10.*dt*meshScalingRegionalCell(iCell))
-            rayleigh_damping_coef = laplacian_filter_coef/5.0
+            laplacian_filter_coef = dt_rk*(real(bdyMaskCell(iCell)) - c1_0)/real(nRelaxZone)/(c10_0*dt*meshScalingRegionalCell(iCell))
+            rayleigh_damping_coef = laplacian_filter_coef/c5_0
             scalars_tmp(1:num_scalars,1:nVertLevels,iCell) = scalars_new(1:num_scalars,1:nVertLevels,iCell)
 
             !  first, we compute the 2nd-order laplacian filter
@@ -7095,8 +7107,8 @@ module atm_time_integration
             kMax_global = int(globalVals(3))
             latMax_global = globalVals(4)
             lonMax_global = globalVals(5)
-            latMax_global = latMax_global * 180.0_RKIND / pi_const
-            lonMax_global = lonMax_global * 180.0_RKIND / pi_const
+            latMax_global = latMax_global * 180.0 / pi_const
+            lonMax_global = lonMax_global * 180.0 / pi_const
             if (lonMax_global > 180.0) then
                lonMax_global = lonMax_global - 360.0
             end if
@@ -7131,8 +7143,8 @@ module atm_time_integration
             kMax_global = int(globalVals(3))
             latMax_global = globalVals(4)
             lonMax_global = globalVals(5)
-            latMax_global = latMax_global * 180.0_RKIND / pi_const
-            lonMax_global = lonMax_global * 180.0_RKIND / pi_const
+            latMax_global = latMax_global * 180.0 / pi_const
+            lonMax_global = lonMax_global * 180.0 / pi_const
             if (lonMax_global > 180.0) then
                lonMax_global = lonMax_global - 360.0
             end if
@@ -7167,8 +7179,8 @@ module atm_time_integration
             kMax_global = int(globalVals(3))
             latMax_global = globalVals(4)
             lonMax_global = globalVals(5)
-            latMax_global = latMax_global * 180.0_RKIND / pi_const
-            lonMax_global = lonMax_global * 180.0_RKIND / pi_const
+            latMax_global = latMax_global * 180.0 / pi_const
+            lonMax_global = lonMax_global * 180.0 / pi_const
             if (lonMax_global > 180.0) then
                lonMax_global = lonMax_global - 360.0
             end if
@@ -7203,8 +7215,8 @@ module atm_time_integration
             kMax_global = int(globalVals(3))
             latMax_global = globalVals(4)
             lonMax_global = globalVals(5)
-            latMax_global = latMax_global * 180.0_RKIND / pi_const
-            lonMax_global = lonMax_global * 180.0_RKIND / pi_const
+            latMax_global = latMax_global * 180.0 / pi_const
+            lonMax_global = lonMax_global * 180.0 / pi_const
             if (lonMax_global > 180.0) then
                lonMax_global = lonMax_global - 360.0
             end if
@@ -7240,8 +7252,8 @@ module atm_time_integration
             kMax_global = int(globalVals(3))
             latMax_global = globalVals(4)
             lonMax_global = globalVals(5)
-            latMax_global = latMax_global * 180.0_RKIND / pi_const
-            lonMax_global = lonMax_global * 180.0_RKIND / pi_const
+            latMax_global = latMax_global * 180.0 / pi_const
+            lonMax_global = lonMax_global * 180.0 / pi_const
             if (lonMax_global > 180.0) then
                lonMax_global = lonMax_global - 360.0
             end if
