@@ -96,31 +96,13 @@ module atm_time_integration
    function flux4(q_im2, q_im1, q_i, q_ip1, ua)
       real (kind=RKIND) :: q_im2, q_im1, q_i, q_ip1, ua, coef3, flux4
       real (kind=RKIND), parameter :: c7_0 = 7.0, c12_0 = 12.0
-#ifdef GPTL
-   integer :: gptl_ret, gptl_handle = 0
-#endif
-#ifdef GPTL
-   gptl_ret = gptlstart_handle("::atm_time_integration::flux4", gptl_handle)
-#endif 
       flux4 = ua*( c7_0*(q_i + q_im1) - (q_ip1 + q_im2) )/c12_0
-#ifdef GPTL
-   gptl_ret = gptlstop_handle("::atm_time_integration::flux4", gptl_handle)
-#endif
    end function flux4
 
    function flux3(q_im2, q_im1, q_i, q_ip1, ua, coef3)
       real (kind=RKIND) :: q_im2, q_im1, q_i, q_ip1, ua, coef3, flux3
-      real (kind=RKIND), parameter :: c3_0 = 3.0, c12_0 = 12.0
-#ifdef GPTL
-   integer :: gptl_ret, gptl_handle = 0
-#endif
-#ifdef GPTL
-   gptl_ret = gptlstart_handle("::atm_time_integration::flux3", gptl_handle)
-#endif 
+      real (kind=RKIND), parameter :: c3_0 = 3.0, c12_0 = 12.0 
       flux3 = flux4(q_im2, q_im1, q_i, q_ip1, ua) + coef3*abs(ua)*((q_ip1 - q_im2)-c3_0*(q_i-q_im1))/c12_0
-#ifdef GPTL
-   gptl_ret = gptlstop_handle("::atm_time_integration::flux3", gptl_handle)
-#endif
    end function flux3
 
    subroutine atm_timestep(domain, dt, nowTime, itimestep)
@@ -3554,7 +3536,7 @@ module atm_time_integration
       real (kind=RKIND) :: u_direction, u_positive, u_negative
       real (kind=RKIND), parameter :: c1_0 = 1.0, c0_5 = 0.5
 #ifdef GPTL
-   integer :: gptl_ret, gptl_handle = 0
+   integer :: gptl_ret, gptl_handle = 0, gptl_handle1 = 0
 #endif
 #ifdef GPTL
    gptl_ret = gptlstart_handle("::atm_time_integration::atm_advance_scalars_work", gptl_handle)
@@ -3706,8 +3688,9 @@ module atm_time_integration
          end do
           
 #ifdef GPTL
-   gptl_ret = gptlstop_handle("::atm_time_integration::atm_advance_scalars_work", gptl_handle)
-#endif
+         gptl_ret = gptlstop_handle("::atm_time_integration::atm_advance_scalars_work", gptl_handle)
+         gptl_ret = gptlstart_handle("::atm_time_integration::fluxes", gptl_handle1)
+#endif 
 !DIR$ IVDEP
          do k=3,nVertLevels-1
 !DIR$ IVDEP
@@ -3718,7 +3701,8 @@ module atm_time_integration
             end do
          end do
 #ifdef GPTL
-   gptl_ret = gptlstart_handle("::atm_time_integration::atm_advance_scalars_work", gptl_handle)
+         gptl_ret = gptlstop_handle("::atm_time_integration::fluxes", gptl_handle1)
+         gptl_ret = gptlstart_handle("::atm_time_integration::atm_advance_scalars_work", gptl_handle)
 #endif
          k = nVertLevels
          do iScalar=1,num_scalars
@@ -3954,7 +3938,7 @@ module atm_time_integration
 
       real (kind=RKIND), parameter :: eps=1.e-20
 #ifdef GPTL
-   integer :: gptl_ret, gptl_handle = 0
+   integer :: gptl_ret, gptl_handle = 0, gptl_handle1 = 0
 #endif
 
       if (present(advance_density)) then
@@ -4100,19 +4084,25 @@ module atm_time_integration
             s_min(k,iCell) = min(scalar_old(k-1,iCell),scalar_old(k,iCell),scalar_old(k+1,iCell))
              
 #ifdef GPTL
-   gptl_ret = gptlstop_handle("::atm_time_integration::atm_advance_scalars_mono_work", gptl_handle)
-#endif
+            gptl_ret = gptlstop_handle("::atm_time_integration::atm_advance_scalars_mono_work", gptl_handle)
+            gptl_ret = gptlstart_handle("::atm_time_integration::fluxes", gptl_handle1)
+#endif 
 !DIR$ IVDEP
             do k=3,nVertLevels-1
                wdtn(k,iCell) = flux3( scalar_new(k-2,iCell),scalar_new(k-1,iCell),  &
                                       scalar_new(k  ,iCell),scalar_new(k+1,iCell),  &
                                       wwAvg(k,iCell), coef_3rd_order )
+            end do
+#ifdef GPTL
+         gptl_ret = gptlstop_handle("::atm_time_integration::fluxes", gptl_handle1)
+         gptl_ret = gptlstart_handle("::atm_time_integration::atm_advance_scalars_mono_work", gptl_handle)
+#endif
+!DIR$ IVDEP
+            do k=3,nVertLevels-1
                s_max(k,iCell) = max(scalar_old(k-1,iCell),scalar_old(k,iCell),scalar_old(k+1,iCell))
                s_min(k,iCell) = min(scalar_old(k-1,iCell),scalar_old(k,iCell),scalar_old(k+1,iCell))
             end do
-#ifdef GPTL
-   gptl_ret = gptlstart_handle("::atm_time_integration::atm_advance_scalars_mono_work", gptl_handle)
-#endif
+
             k = nVertLevels
             wdtn(k,iCell) = wwAvg(k,iCell)*(fnm(k)*scalar_new(k,iCell)+fnp(k)*scalar_new(k-1,iCell))
             s_max(k,iCell) = max(scalar_old(k,iCell),scalar_old(k-1,iCell))
@@ -4908,7 +4898,7 @@ module atm_time_integration
       real (kind=RKIND), dimension( nVertLevels ) :: rayleigh_damp_coef
       real (kind=RKIND), parameter :: c1_0 = 1.0, c0_01 = 0.01, c2_0833 = 2.0833, c2_0 = 2.0, c4_0 = 4.0, c0_5 = 0.5, c0_25 = 0.25
 #ifdef GPTL
-   integer :: gptl_ret, gptl_handle = 0
+   integer :: gptl_ret, gptl_handle = 0, gptl_handle1 = 0
 #endif
 #ifdef GPTL
    gptl_ret = gptlstart_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
@@ -5047,13 +5037,15 @@ module atm_time_integration
          k = 2
          wduz(k) =  c0_5*( rw(k,cell1)+rw(k,cell2))*(fzm(k)*u(k,iEdge)+fzp(k)*u(k-1,iEdge))
 #ifdef GPTL
-   gptl_ret = gptlstop_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
+         gptl_ret = gptlstop_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
+         gptl_ret = gptlstart_handle("::atm_time_integration::fluxes", gptl_handle1)
 #endif
          do k=3,nVertLevels-1
             wduz(k) = flux3( u(k-2,iEdge),u(k-1,iEdge),u(k,iEdge),u(k+1,iEdge),c0_5*(rw(k,cell1)+rw(k,cell2)), c1_0 )
          end do
 #ifdef GPTL
-   gptl_ret = gptlstart_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
+         gptl_ret = gptlstop_handle("::atm_time_integration::fluxes", gptl_handle1)
+         gptl_ret = gptlstart_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
 #endif
          k = nVertLevels
          wduz(k) =  c0_5*( rw(k,cell1)+rw(k,cell2))*(fzm(k)*u(k,iEdge)+fzp(k)*u(k-1,iEdge))
@@ -5430,13 +5422,15 @@ module atm_time_integration
          k = 2
          wdwz(k) =  c0_25*(rw(k,icell)+rw(k-1,iCell))*(w(k,iCell)+w(k-1,iCell))
 #ifdef GPTL
-   gptl_ret = gptlstop_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
+         gptl_ret = gptlstop_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
+         gptl_ret = gptlstart_handle("::atm_time_integration::fluxes", gptl_handle1)
 #endif
          do k=3,nVertLevels-1
             wdwz(k) = flux3( w(k-2,iCell),w(k-1,iCell),w(k,iCell),w(k+1,iCell),c0_5*(rw(k,iCell)+rw(k-1,iCell)), c1_0 )
          end do
 #ifdef GPTL
-   gptl_ret = gptlstart_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
+         gptl_ret = gptlstop_handle("::atm_time_integration::fluxes", gptl_handle1)
+         gptl_ret = gptlstart_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
 #endif
          k = nVertLevels
          wdwz(k) =  c0_25*(rw(k,icell)+rw(k-1,iCell))*(w(k,iCell)+w(k-1,iCell))
@@ -5600,16 +5594,18 @@ module atm_time_integration
          k = 2
          wdtz(k) =  rw(k,icell)*(fzm(k)*theta_m(k,iCell)+fzp(k)*theta_m(k-1,iCell))  
          wdtz(k) =  wdtz(k)+(rw_save(k,icell)-rw(k,icell))*(fzm(k)*theta_m_save(k,iCell)+fzp(k)*theta_m_save(k-1,iCell))
+#ifdef GPTL
+         gptl_ret = gptlstop_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
+         gptl_ret = gptlstart_handle("::atm_time_integration::fluxes", gptl_handle1)
+#endif
          do k=3,nVertLevels-1
-#ifdef GPTL
-   gptl_ret = gptlstop_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
-#endif
             wdtz(k) = flux3( theta_m(k-2,iCell),theta_m(k-1,iCell),theta_m(k,iCell),theta_m(k+1,iCell), rw(k,iCell), coef_3rd_order )
-#ifdef GPTL
-   gptl_ret = gptlstart_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
-#endif
             wdtz(k) =  wdtz(k) + (rw_save(k,icell)-rw(k,iCell))*(fzm(k)*theta_m_save(k,iCell)+fzp(k)*theta_m_save(k-1,iCell))  ! rtheta_pp redefinition
          end do
+#ifdef GPTL
+         gptl_ret = gptlstop_handle("::atm_time_integration::fluxes", gptl_handle1)
+         gptl_ret = gptlstart_handle("::atm_time_integration::atm_compute_dyn_tend_work", gptl_handle)
+#endif
          k = nVertLevels
          wdtz(k) =  rw_save(k,icell)*(fzm(k)*theta_m(k,iCell)+fzp(k)*theta_m(k-1,iCell))  ! rtheta_pp redefinition
 
