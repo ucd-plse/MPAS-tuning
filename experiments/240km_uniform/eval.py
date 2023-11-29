@@ -77,7 +77,7 @@ for file_name in glob("diag.*.nc"):
 for file_name in glob("restart.*.nc"):
     os.remove(file_name)    
 
-if np.linalg.norm(df["Kinetic energy at a cell center"]) > 140.47898543748735:
+if np.linalg.norm(df["ke"]) > 140.47898543748735:
     cost = -1 * abs(cost)
 
 print(cost)
