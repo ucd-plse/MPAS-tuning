@@ -59,14 +59,15 @@ for file_name in sorted([x for x in glob("history.*.nc")]):
     abs_errs = np.abs(this_data-baseline_data)
     rel_errs = xr.where(abs_errs == 0, abs_errs, np.abs(abs_errs/baseline_data))
 
-    # take the L2 norm of the relative errors over the mesh for each metric
+    # take the maximum of the relative errors over the mesh for each metric
     this_data_dict = (rel_errs).map(np.max).to_array().to_pandas().to_dict()
 
     this_data_dict["time"] = time
     data.append(this_data_dict)
 
 # save errors
-pd.DataFrame(data).to_pickle(os.path.join(log_path, "errors.pckl"))
+df = pd.DataFrame(data)
+df.to_pickle(os.path.join(log_path, "errors.pckl"))
 
 # cleanup
 for file_name in glob("history.*.nc"):
@@ -75,5 +76,8 @@ for file_name in glob("diag.*.nc"):
     os.remove(file_name)
 for file_name in glob("restart.*.nc"):
     os.remove(file_name)    
+
+if np.linalg.norm(df["Kinetic energy at a cell center"]) > 140.47898543748735:
+    cost = -1 * abs(cost)
 
 print(cost)
