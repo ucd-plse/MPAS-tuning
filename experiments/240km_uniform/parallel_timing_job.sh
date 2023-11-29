@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -N MPAS_timing_job
 #PBS -A UCDV0023
-#PBS -l walltime=00:20:00
+#PBS -l walltime=00:30:00
 #PBS -q main
 #PBS -l job_priority=regular
 #PBS -j oe
@@ -17,7 +17,7 @@ for node in ${nodes_list}; do
     cmd="cd ${PWD}/.. \\
     && cp -r 240km_uniform 240km_uniform_${node} \\
     && cd 240km_uniform_${node} \\
-    && source ../../scripts/set_env.sh \\
+    && source ../../scripts/set_MPAS_env_intel.sh \\
     && make clean \\
     && mpirun --hosts ${node} -n 64 ../../atmosphere_model \\
     && mv log.atmosphere.0000.out ../240km_uniform/out_${node}.txt \\
