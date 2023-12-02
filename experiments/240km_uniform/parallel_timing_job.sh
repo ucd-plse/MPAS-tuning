@@ -15,7 +15,7 @@ for node in ${nodes_list}; do
     [[ "$(hostname)"] == ${node} ]] && continue
 
     cmd="cd ${PWD}/.. \\
-    && cp -r 240km_uniform 240km_uniform_${node} \\
+    && rsync -av --exclude='*prose*' --exclude='__*' --exclude='*.ipynb' 240km_uniform/ 240km_uniform_${node} \\
     && cd 240km_uniform_${node} \\
     && source ../../scripts/set_MPAS_env_intel.sh \\
     && make clean \\
