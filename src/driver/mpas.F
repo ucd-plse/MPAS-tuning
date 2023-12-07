@@ -29,7 +29,7 @@ program mpas
    call mpas_finalize()
 
 #ifdef GPTL
-  do gptl_i=0,63
+  do gptl_i=0,7
         gptl_ret = gptlpr(gptl_i)
   end do
   gptl_ret = gptlfinalize()
