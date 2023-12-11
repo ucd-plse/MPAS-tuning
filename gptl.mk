@@ -25,6 +25,5 @@ mpas_atm_boundaries.o				: private override FFLAGS += -I /glade/u/home/jdvanover
 mpas_timekeeping.o					: private override FFLAGS += -I /glade/u/home/jdvanover/gptl-8.1.1/install-intel/include -DGPTL
 mpas_vector_reconstruction.o		: private override FFLAGS += -I /glade/u/home/jdvanover/gptl-8.1.1/install-intel/include -DGPTL
 mpas.o	: private override FFLAGS += -I /glade/u/home/jdvanover/gptl-8.1.1/install-intel/include -DGPTL
-LDFLAGS += -L /glade/u/home/jdvanover/gptl-8.1.1/install-intel/lib -lgptl -lgptlf -rdynamic
 
 endif
