@@ -69,6 +69,10 @@ for file_name in sorted([x for x in glob("history.*.nc")]):
 df = pd.DataFrame(data)
 df.to_pickle(os.path.join(log_path, "errors.pckl"))
 
+
+if np.linalg.norm(df["ke"]) > 140.47898543748735:
+    cost = -1 * abs(cost)
+    
 # cleanup
 for file_name in glob("history.*.nc"):
     os.remove(file_name)
@@ -76,8 +80,5 @@ for file_name in glob("diag.*.nc"):
     os.remove(file_name)
 for file_name in glob("restart.*.nc"):
     os.remove(file_name)    
-
-if np.linalg.norm(df["ke"]) > 140.47898543748735:
-    cost = -1 * abs(cost)
 
 print(cost)
