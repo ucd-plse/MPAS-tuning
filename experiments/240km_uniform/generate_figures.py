@@ -249,78 +249,7 @@ df_entire, df_subset = get_MPAS_data("./prose_logs/search_log.txt")
 
 # %%
 fig = plot_performance_vs_correctness_L2(df_entire, error_type="ke", error_threshold=132)
-fig.write_html("figure_5_MPAS.html")
-
-# %%
-from plotly.subplots import make_subplots
-
-df_subset["Average CPU Time Per Call"] = df_subset["CPU Time"] / df_subset["Execution Count"]
-for procedure_name in df_subset[df_subset["Procedure Name"].str.contains("::")]["Procedure Name"].unique():
-    for config_hash in df_subset[df_subset["Procedure Name"] == procedure_name]["config_hash"].unique():
-        df_subset.loc[(df_subset["Procedure Name"] == procedure_name) & (df_subset["config_hash"] == config_hash), "Average CPU Time Per Call"] = df_subset.loc[(df_subset["Procedure Name"] == procedure_name) & (df_subset["config_hash"] == config_hash), "Average CPU Time Per Call"].mean()
-
-procedure_percentages = {
-    '::atm_time_integration::atm_recover_large_step_variables_work': "23.9",#23.85573770006054,
-    '::atm_time_integration::atm_compute_dyn_tend_work': "21.5",#21.513575486114263,
-    '::atm_time_integration::atm_advance_acoustic_step_work': "9.9",#9.919105842657316,
-    '::atm_time_integration::fluxes': "2.6",#2.598569413169517,
-}
-
-subplot_titles = [f'{x[x.rfind(":") + 1:]} ({procedure_percentages[x]}%)' if "fluxes" not in x else f'flux3 and flux4 ({procedure_percentages[x]}%)' for x in procedure_percentages.keys()]
-
-fig = make_subplots(len(procedure_percentages),1, subplot_titles=tuple(subplot_titles), shared_xaxes=True, vertical_spacing=0.1)
-for i, procedure_name in enumerate(procedure_percentages.keys()):
-    df_plot = df_subset[df_subset["Procedure Name"] == procedure_name]
-    baseline_cost = df_plot[df_plot["Configuration Number"] == 0]["Average CPU Time Per Call"].values[0]
-    df_plot = df_plot.assign(Improvement = np.round(baseline_cost/df_plot['Average CPU Time Per Call'], decimals=2))
-    df_plot = df_plot.drop_duplicates(subset=["config_hash","Improvement"])
-    fig.add_trace(
-        go.Scatter(
-            x = df_plot["Improvement"],
-            y = np.random.rand(len(df_subset)),
-            mode = 'markers',
-            customdata=df_plot["Configuration Number"],
-            hovertemplate="%{customdata}",
-            marker = dict(
-                size = 10,
-                color=df_plot["32-bit %"],
-                line_width = 1,
-                line_color = "black",
-                opacity = 0.6,
-                coloraxis="coloraxis1",
-                symbol = "diamond",
-            ),
-            showlegend=False
-        ),
-        i + 1,
-        1
-    )
-    if i == 0:
-        fig.update_traces(
-            marker_colorbar_title = "% 32-bit",
-            marker_colorscale = "Plasma",
-        )
-
-fig.update_layout(
-    showlegend = False,
-    title=dict(
-        text = "MPAS-A",
-    ),
-    font_family = "Times New Roman",
-    coloraxis={
-        "cmin" : 0,
-        "cmax" : 100,
-        "colorbar" : {
-            'title' : "% 32-bit (Procedure)",
-        },
-    },
-)
-
-fig.update_xaxes(type="log",ticksuffix="x")
-fig.update_xaxes(title="Speedup", row=len(procedure_percentages), col=1)
-fig.update_yaxes(visible=False)
-fig.update_annotations(yshift=-5, font_size=18)
-fig.write_html("figure_6_MPAS.html")
+fig.write_html("figure_7_MPAS.html")
 
 # %%
 
