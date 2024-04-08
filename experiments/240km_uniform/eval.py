@@ -39,7 +39,7 @@ try:
     with open(os.path.join(log_path, "outlog.txt"), "r") as f:
         for line in f.readlines():
             if line.startswith("  1 total time"):
-                cost = float(line.split()[3])
+                cost += float(line.split()[3])
 except:
     pass
 
@@ -77,7 +77,7 @@ for file_name in glob("diag.*.nc"):
 for file_name in glob("restart.*.nc"):
     os.remove(file_name)    
 
-if np.linalg.norm(df["ke"]) > 140.47898543748735:
+if np.linalg.norm(df["ke"]) > 132:
     cost = -1 * abs(cost)
 
 print(cost)

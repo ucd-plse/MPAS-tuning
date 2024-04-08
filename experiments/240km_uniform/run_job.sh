@@ -9,4 +9,4 @@
 #PBS -l select=1:ncpus=64:mpiprocs=64:mem=235GB
 
 source ../../scripts/set_MPAS_env_intel.sh
-make clean && mpirun -n 64 ../../atmosphere_model && cat log.atmosphere.0000.out
+time ./run_script.sh
