@@ -8,5 +8,7 @@
 #PBS -k eod
 #PBS -l select=20:ncpus=64:mpiprocs=64:mem=235GB
 
+export PROSE_REPO_PATH
 source ../../scripts/set_MPAS_env_intel.sh
+
 python3 ${PROSE_REPO_PATH}/scripts/prose_search.py -s setup.ini
