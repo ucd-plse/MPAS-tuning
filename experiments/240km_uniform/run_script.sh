@@ -9,12 +9,12 @@ do
 
     while true; do
 
-        if make clean > /dev/null && mpiexec -n 64 --hosts $1 ../../atmosphere_model > temp 2>&1; then
+        if make clean > /dev/null && mpiexec -n 8 --allow-run-as-root ../../atmosphere_model > temp 2>&1; then
             grep -e "  1 total time" log.atmosphere.0000.out
             cat temp
             mv timing.* __temp${i}
             cd __temp${i}
-            cost=$(python3 /glade/u/home/jdvanover/precimonious-w-rose/src/python/gptlparser.py | tail -n 1)
+            cost=$(python3 /root/artifact/src/python/gptlparser.py | tail -n 1)
             touch COST_${cost}
             costs+=(${cost})
             cd ..

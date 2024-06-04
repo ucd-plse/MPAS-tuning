@@ -3,6 +3,5 @@
 export PRECISION=double
 
 cd $(dirname "$0")/../
-source ./scripts/set_MPAS_env_gnu.sh
 make clean CORE=atmosphere
-make -j16 gfortran CORE=atmosphere PRECISION="${PRECISION}"
+make -j8 gfortran GPTL=1 CORE=atmosphere PRECISION="${PRECISION}"
