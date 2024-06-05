@@ -19,7 +19,7 @@ do
             costs+=(${cost})
             cd ..
             break
-        elif grep -qe "rrtmg_lw_taumol_m" temp && grep -qe "SIGSEGV" temp; then
+        elif grep -qe "SIGSEGV" temp; then
             echo "##FAIL"
             continue
         else
