@@ -1,5 +1,5 @@
 #!/bin/bash
-source ${PROSE_REPO_PATH}/scripts/derecho_env.sh
+source ${PROSE_REPO_PATH}/scripts/set_env.sh
 module load ncarenv/23.06
 module load intel-classic/2023.0.0
 module load cray-mpich/8.1.25
